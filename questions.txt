@@ -1,4 +1,20 @@
 Dans les tables O_CONS et O_TRET on a chacun une fk vers l'autre c'est bizarre, on préconise juste un fk dans O_TRET vers O_CONS mm chose entre O_HOSP et O_CONS
+Hypothèse (Paul): Effectivement cela introduit de la redondance mais ça sécurise la BDD. On est sur de ne pas avoir plusieurs traitements pour une consultation et inversement
+
 
 Utilité de HOS_IND à la place HOSP_ID ds O_CONS
+Hypothèse (Paul): Je crois que hos_ind est un booleen permettant de savoir s'il y a eu hospitalisation à la suite ou pas. 
+Mais les consultations arrivent avant les hospitalisations donc peut être que l'hospitalisation n'est pas encore créée 
+quand on ajoute la consultation mais il y a quand même une hospitalisation qui arrivera dans les jours qui suivent.
+
+
 Intérèt d'avoir STRT_VALD_DTTM en PK de O_TELP et O_ADDR, est ce pour qu'une paersonne puisse avoir plusieurs num de tel/adresses
+Hypothèse (Paul): Oui lorsqu'un patient se fait hospitaliser plusieurs fois, on réécrit les données à chaque fois car le patient peut changer d'adresse ou de num de tel. 
+En plus, on ne peut pas checker tous les patients à chaque nouvelle hospitalisation pour savoir si on l'a déjà dans la BDD ou pas. C'est plus rapide de juste l'ajouter à chaque fois. 
+
+
+Commentaires Paul:
+- Ajout des infos NULL ou/et NOT NULL
+- Mettre en UNIQUE le couple (SRC_ID, SRC_TYP) de R_PART
+- TRET_ID de O_CONS est un TIMESTAMP dans l'excel mais vous l'avez mis en int, c'est normal ?
+- ROOM_NUM est une FK de O_HOSP mais les attributs n'ont pas le même type entre les 2 tables (smallint et int)
