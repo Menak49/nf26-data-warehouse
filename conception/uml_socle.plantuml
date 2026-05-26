@@ -1,0 +1,181 @@
+@startuml SOC_Socle
+
+
+
+entity "R_PART" {
+  * PART_ID : INTEGER <<PK>>
+  --
+  SRC_ID : INTEGER
+  SRC_TYP : VARCHAR(50)
+}
+
+entity "R_ROOM" {
+  * ROOM_NUM : INTEGER <<PK>>
+  --
+  ROOM_NAME : VARCHAR(20)
+  FLOR_NUM : BYTEINT
+  BULD_NAME : VARCHAR(20)
+  ROOM_TYP : VARCHAR(10)
+  ROOM_DAY_RATE : SMALLINT
+  CRTN_DT : DATE
+  EXEC_ID : INTEGER <<FK>>
+
+}
+
+entity "R_MEDC" {
+  * MEDC_ID : INTEGER <<PK>>
+  --
+  MEDC_CD : VARCHAR(10)
+  MEDC_NAME : VARCHAR(250)
+  MEDC_COND : VARCHAR(100)
+  MEDC_CATG : VARCHAR(100)
+  MANF_BRND : VARCHAR(100)
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "O_INDV" {
+  * PART_ID : INTEGER <<PK, FK>>
+  --
+  INDV_NAME : VARCHAR(100)
+  INDV_FIRS_NAME : VARCHAR(100)
+  INDV_STTS_CD : VARCHAR(10)
+  CRTN_DTTM : TIMESTAMP(0)
+  UPDT_DTTM : TIMESTAMP(0)
+  BIRT_DT : DATE
+  BIRT_CITY : VARCHAR(100)
+  BIRT_CNTR : VARCHAR(100)
+  SOCL_NUM : VARCHAR(15)
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "O_STFF" {
+  * PART_ID : INTEGER <<PK, FK>>
+  --
+  WORK_STRT_DTTM : TIMESTAMP(0)
+  WORK_END_DTTM : TIMESTAMP(0)
+  WORK_END_RESN : VARCHAR(100)
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "O_TELP" {
+  * PART_ID : INTEGER <<PK, FK>>
+  * STRT_VALD_DTTM : TIMESTAMP(0) <<PK>>
+  --
+  CNTR_IND : VARCHAR(5)
+  TELP_NUM : VARCHAR(20)
+  END_VALD_DTTM : TIMESTAMP(0)
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "O_ADDR" {
+  * PART_ID : INTEGER <<PK, FK>>
+  * STRT_VALD_DTTM : TIMESTAMP(0) <<PK>>
+  --
+  STRT_NUM : VARCHAR(10)
+  STRT_DSC : VARCHAR(250)
+  COMP_STRT : VARCHAR(250)
+  POST_CD : VARCHAR(10)
+  CITY_NAME : VARCHAR(100)
+  CNTR_NAME : VARCHAR(100)
+  END_VALD_DTTM : TIMESTAMP(0)
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "O_TRET" {
+  * TRET_ID : INTEGER <<PK>>
+  --
+  MEDC_ID : INTEGER <<FK>>
+  MEDC_QTY : SMALLINT
+  DOSG_DSC : VARCHAR(100)
+  CONS_ID : INTEGER <<FK>>
+  TRET_CRTN_DTTM : TIMESTAMP(0)
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "O_CONS" {
+  * CONS_ID : INTEGER <<PK>>
+  --
+  STFF_ID : INTEGER <<FK>>
+  PATN_ID : INTEGER <<FK>>
+  CONS_STRT_DTTM : TIMESTAMP(0)
+  CONS_END_DTTM : TIMESTAMP(0)
+  PATN_WEGH : INTEGER
+  PATN_TEMP : INTEGER
+  TEMP_UNIT : VARCHAR(15)
+  BLD_PRSS : INTEGER
+  PATH_DSC : VARCHAR(250)
+  DIBT_IND : BYTEINT
+  TRET_ID : INTEGER <<FK>>
+  HOSP_IND : BYTEINT
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "O_HOSP" {
+  * HOSP_ID : INTEGER <<PK>>
+  --
+  CONS_ID : INTEGER <<FK>>
+  ROOM_NUM : SMALLINT <<FK>>
+  HOSP_STRT_DTTM : TIMESTAMP(0)
+  HOSP_END_DTTM : TIMESTAMP(0)
+  HOSP_FINL_RATE : TIMESTAMP(0)
+  STFF_ID : INTEGER <<FK>>
+  EXEC_ID : INTEGER <<FK>>
+}
+
+entity "T_SUIV_RUN" {
+  * RUN_ID : INTEGER <<PK>>
+  --
+  RUN_STRT_DTTM : TIMESTAMP(0)
+  RUN_END_DTTM : TIMESTAMP(0)
+  RUN_STTS_CD : VARCHAR(10)
+}
+
+entity "T_SUIV_TRMT" {
+  * EXEC_ID : INTEGER <<PK>>
+  --
+  RUN_ID : INTEGER <<FK>>
+  SCRPT_NAME : VARCHAR(250)
+  EXEC_STRT_DTTM : TIMESTAMP(0)
+  EXEC_END_DTTM : TIMESTAMP(0)
+  EXEC_STTS_CD : VARCHAR(10)
+}
+
+' ── R_PART vers sous-tables ──────────────────────────
+R_PART "1" -- "1" O_INDV   : PART_ID
+R_PART "1" -- "1" O_STFF   : PART_ID
+R_PART "1" -- "0..*" O_TELP  : PART_ID
+R_PART "1" -- "0..*" O_ADDR  : PART_ID
+
+' ── R_MEDC vers O_TRET ───────────────────────────────
+R_MEDC "1" -- "0..*" O_TRET  : MEDC_ID
+
+' ── O_CONS vers O_TRET (double lien) ─────────────────
+O_CONS "1" -- "0..*" O_TRET  : CONS_ID
+O_CONS "0..1" -- "0..*" O_TRET : TRET_ID
+
+' ── O_STFF / O_INDV vers O_CONS ──────────────────────
+O_STFF "1" -- "0..*" O_CONS  : STFF_ID
+O_INDV "1" -- "0..*" O_CONS  : PATN_ID
+
+' ── O_CONS vers O_HOSP ───────────────────────────────
+O_CONS "1" -- "0..1" O_HOSP  : CONS_ID
+
+' ── R_ROOM / O_STFF vers O_HOSP ──────────────────────
+R_ROOM "1" -- "0..*" O_HOSP  : ROOM_NUM
+O_STFF "1" -- "0..*" O_HOSP  : STFF_ID
+
+' ── TCH : run -> trmt ────────────────────────────────
+T_SUIV_RUN "1" -- "0..*" T_SUIV_TRMT : RUN_ID
+
+' ── EXEC_ID FK dans toutes les tables métier ─────────
+T_SUIV_TRMT "1" -- "0..*" R_ROOM  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" R_MEDC  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" O_INDV  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" O_STFF  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" O_TELP  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" O_ADDR  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" O_TRET  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" O_CONS  : EXEC_ID
+T_SUIV_TRMT "1" -- "0..*" O_HOSP  : EXEC_ID
+
+@enduml

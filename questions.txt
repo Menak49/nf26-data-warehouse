@@ -1,0 +1,4 @@
+Dans les tables O_CONS et O_TRET on a chacun une fk vers l'autre c'est bizarre, on préconise juste un fk dans O_TRET vers O_CONS mm chose entre O_HOSP et O_CONS
+
+Utilité de HOS_IND à la place HOSP_ID ds O_CONS
+Intérèt d'avoir STRT_VALD_DTTM en PK de O_TELP et O_ADDR, est ce pour qu'une paersonne puisse avoir plusieurs num de tel/adresses
