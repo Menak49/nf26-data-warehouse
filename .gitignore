@@ -1,1 +1,5 @@
 Data
+.venv/
+logs/
+rsa_key.p8
+rsa_key.pub
