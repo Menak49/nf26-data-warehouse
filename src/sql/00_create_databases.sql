@@ -1,3 +1,11 @@
+-- =============================================================
+-- Script : create_databases.sql
+-- Description : Creation des bases de données du SID
+-- Date : 2026-05-28
+-- Note : Idempotent — les bases ne sont pas recreees si elles existent deja (IF NOT EXISTS)
+-- =============================================================
+
+
 CREATE DATABASE IF NOT EXISTS STG;
 CREATE DATABASE IF NOT EXISTS WRK;
 CREATE DATABASE IF NOT EXISTS SOC;
