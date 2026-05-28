@@ -3,6 +3,8 @@ Data
 logs/
 rsa_key.p8
 rsa_key.pub
+rsa_key.pem
 presentationProjet.pdf
 venv
 .mypy_cache
+.env
