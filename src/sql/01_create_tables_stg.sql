@@ -1,13 +1,10 @@
 -- =============================================================
--- Script      : create_tables_stg.sql
+-- Script      : 01_create_tables_stg.sql
 -- Description : Creation des tables de la zone Staging (STG)
 -- Date        : 2026-05-28
--- Note        : Idempotent — CREATE OR REPLACE recree les tables à chaque execution (comportement attendu pour STG)
+-- Note        : Idempotent — CREATE OR REPLACE recree les tables
+--               a chaque execution (comportement attendu pour STG)
 -- =============================================================
-
-
-
-
 
 USE DATABASE STG;
 USE SCHEMA PUBLIC;
@@ -17,13 +14,13 @@ USE SCHEMA PUBLIC;
 -- Source : CHAMBRE_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.CHAMBRE (
-    NO_CHAMBRE      INTEGER,
-    NOM_CHAMBRE     VARCHAR(20),
-    NO_ETAGE        INTEGER,
+    NO_CHAMBRE      INTEGER         NOT NULL,
+    NOM_CHAMBRE     VARCHAR(20)     NOT NULL,
+    NO_ETAGE        BYTEINT,
     NOM_BATIMENT    VARCHAR(20),
     TYPE_CHAMBRE    VARCHAR(10),
-    PRIX_JOUR       INTEGER,
-    DT_CREATION     DATE
+    PRIX_JOUR       SMALLINT        NOT NULL,
+    DT_CREATION     DATE            NOT NULL
 );
 
 -- -------------------------------------------------------------
@@ -31,11 +28,11 @@ CREATE OR REPLACE TABLE STG.PUBLIC.CHAMBRE (
 -- Source : MEDICAMENT_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.MEDICAMENT (
-    CD_MEDICAMENT       INTEGER,
+    CD_MEDICAMENT       VARCHAR(10)     NOT NULL,
     NOM_MEDICAMENT      VARCHAR(250),
     CONDIT_MEDICAMENT   VARCHAR(100),
-    CATG_MEDICAMENT     VARCHAR(100),
-    MARQUE_FABRI        VARCHAR(100)
+    CATG_MEDICAMENT     VARCHAR(100)    NOT NULL,
+    MARQUE_FABRI        VARCHAR(100)    NOT NULL
 );
 
 -- -------------------------------------------------------------
@@ -43,16 +40,16 @@ CREATE OR REPLACE TABLE STG.PUBLIC.MEDICAMENT (
 -- Source : PERSONNEL_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.PERSONNEL (
-    ID_PERSONNEL            INTEGER,
-    NOM_PERSONNEL           VARCHAR(100),
-    PRENOM_PERSONNEL        VARCHAR(100),
-    FONCTION_PERSONNEL      VARCHAR(50),
-    TS_DEBUT_ACTIVITE       TIMESTAMP,
-    TS_FIN_ACTIVITE         TIMESTAMP,
+    ID_PERSONNEL            INTEGER         NOT NULL,
+    NOM_PERSONNEL           VARCHAR(100)    NOT NULL,
+    PRENOM_PERSONNEL        VARCHAR(100)    NOT NULL,
+    FONCTION_PERSONNEL      VARCHAR(50)     NOT NULL,
+    TS_DEBUT_ACTIVITE       TIMESTAMP(0)    NOT NULL,
+    TS_FIN_ACTIVITE         TIMESTAMP(0),
     RAISON_FIN_ACTIVITE     VARCHAR(100),
-    TS_CREATION_PERSONNEL   TIMESTAMP,
-    TS_MAJ_PERSONNEL        TIMESTAMP,
-    CD_STATUT_PERSONNEL     VARCHAR(10)
+    TS_CREATION_PERSONNEL   TIMESTAMP(0)    NOT NULL,
+    TS_MAJ_PERSONNEL        TIMESTAMP(0)    NOT NULL,
+    CD_STATUT_PERSONNEL     VARCHAR(10)     NOT NULL
 );
 
 -- -------------------------------------------------------------
@@ -60,23 +57,23 @@ CREATE OR REPLACE TABLE STG.PUBLIC.PERSONNEL (
 -- Source : PATIENT_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.PATIENT (
-    ID_PATIENT          INTEGER,
-    NOM_PATIENT         VARCHAR(100),
-    PRENOM_PATIENT      VARCHAR(100),
-    DT_NAISS            DATE,
-    VILLE_NAISS         VARCHAR(100),
-    PAYS_NAISS          VARCHAR(100),
-    NUM_SECU            VARCHAR(15),
+    ID_PATIENT          INTEGER         NOT NULL,
+    NOM_PATIENT         VARCHAR(100)    NOT NULL,
+    PRENOM_PATIENT      VARCHAR(100)    NOT NULL,
+    DT_NAISS            DATE            NOT NULL,
+    VILLE_NAISS         VARCHAR(100)    NOT NULL,
+    PAYS_NAISS          VARCHAR(100)    NOT NULL,
+    NUM_SECU            VARCHAR(15)     NOT NULL,
     IND_PAYS_NUM_TELP   VARCHAR(5),
-    NUM_TELEPHONE       VARCHAR(20),
-    NUM_VOIE            VARCHAR(10),
-    DSC_VOIE            VARCHAR(250),
+    NUM_TELEPHONE       VARCHAR(20)     NOT NULL,
+    NUM_VOIE            VARCHAR(10)     NOT NULL,
+    DSC_VOIE            VARCHAR(250)    NOT NULL,
     CMPL_VOIE           VARCHAR(250),
-    CD_POSTAL           VARCHAR(10),
+    CD_POSTAL           VARCHAR(10)     NOT NULL,
     VILLE               VARCHAR(100),
     PAYS                VARCHAR(100),
-    TS_CREATION_PATIENT TIMESTAMP,
-    TS_MAJ_PATIENT      TIMESTAMP
+    TS_CREATION_PATIENT TIMESTAMP(0)    NOT NULL,
+    TS_MAJ_PATIENT      TIMESTAMP(0)    NOT NULL
 );
 
 -- -------------------------------------------------------------
@@ -84,17 +81,17 @@ CREATE OR REPLACE TABLE STG.PUBLIC.PATIENT (
 -- Source : CONSULTATION_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.CONSULTATION (
-    ID_CONSULT          INTEGER,
-    ID_PERSONNEL        INTEGER,
-    ID_PATIENT          INTEGER,
-    TS_DEBUT_CONSULT    TIMESTAMP,
-    TS_FIN_CONSULT      TIMESTAMP,
-    POIDS_PATIENT       FLOAT,
-    TEMP_PATIENT        FLOAT,
+    ID_CONSULT          INTEGER         NOT NULL,
+    ID_PERSONNEL        INTEGER         NOT NULL,
+    ID_PATIENT          INTEGER         NOT NULL,
+    TS_DEBUT_CONSULT    TIMESTAMP(0)    NOT NULL,
+    TS_FIN_CONSULT      TIMESTAMP(0)    NOT NULL,
+    POIDS_PATIENT       INTEGER         NOT NULL,
+    TEMP_PATIENT        INTEGER,
     UNIT_TEMP           VARCHAR(15),
-    TENSION_PATIENT     FLOAT,
+    TENSION_PATIENT     INTEGER,
     DSC_PATHO           VARCHAR(250),
-    INDIC_DIABETE       VARCHAR(10), 
+    INDIC_DIABETE       VARCHAR(10),
     ID_TRAITEMENT       INTEGER,
     INDIC_HOSPI         VARCHAR(10)
 );
@@ -104,14 +101,14 @@ CREATE OR REPLACE TABLE STG.PUBLIC.CONSULTATION (
 -- Source : TRAITEMENT_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.TRAITEMENT (
-    ID_TRAITEMENT           INTEGER,
-    CD_MEDICAMENT           INTEGER,
-    CATG_MEDICAMENT         VARCHAR(100),
-    MARQUE_FABRI            VARCHAR(100),
-    QTE_MEDICAMENT          INTEGER,
-    DSC_POSOLOGIE           VARCHAR(100),
-    ID_CONSULT              INTEGER,
-    TS_CREATION_TRAITEMENT  TIMESTAMP
+    ID_TRAITEMENT           INTEGER         NOT NULL,
+    CD_MEDICAMENT           INTEGER         NOT NULL,
+    CATG_MEDICAMENT         VARCHAR(100)    NOT NULL,
+    MARQUE_FABRI            VARCHAR(100)    NOT NULL,
+    QTE_MEDICAMENT          SMALLINT,
+    DSC_POSOLOGIE           VARCHAR(100)    NOT NULL,
+    ID_CONSULT              INTEGER         NOT NULL,
+    TS_CREATION_TRAITEMENT  TIMESTAMP(0)    NOT NULL
 );
 
 -- -------------------------------------------------------------
@@ -119,11 +116,11 @@ CREATE OR REPLACE TABLE STG.PUBLIC.TRAITEMENT (
 -- Source : HOSPITALISATION_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.HOSPITALISATION (
-    ID_HOSPI            INTEGER,
-    ID_CONSULT_HOSPI    INTEGER,
-    NO_CHAMBRE_HOSPI    INTEGER,
-    TS_DEBUT_HOSPI      TIMESTAMP,
-    TS_FIN_HOSPI        TIMESTAMP,
-    COUT_HOSPI          FLOAT,
-    ID_PERSONNEL_RESP   INTEGER
+    ID_HOSPI            INTEGER         NOT NULL,
+    ID_CONSULT_HOSPI    INTEGER         NOT NULL,
+    NO_CHAMBRE_HOSPI    SMALLINT        NOT NULL,
+    TS_DEBUT_HOSPI      TIMESTAMP(0)    NOT NULL,
+    TS_FIN_HOSPI        TIMESTAMP(0)    NOT NULL,
+    COUT_HOSPI          FLOAT           NOT NULL,
+    ID_PERSONNEL_RESP   INTEGER         NOT NULL
 );
