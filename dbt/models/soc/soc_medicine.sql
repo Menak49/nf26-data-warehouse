@@ -1,10 +1,3 @@
-{{
-    config(
-        materialized='table',
-        schema='SOC'
-    )
-}}
-
 SELECT
     ROW_NUMBER() OVER (
         ORDER BY MEDC_CD, MEDC_CATG, MANF_BRND

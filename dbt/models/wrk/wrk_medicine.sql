@@ -1,10 +1,3 @@
-{{
-    config(
-        materialized='table',
-        schema='WRK'
-    )
-}}
-
 SELECT
     CD_MEDICAMENT       AS MEDC_CD,
     NOM_MEDICAMENT      AS MEDC_NAME,

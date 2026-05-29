@@ -1,10 +1,3 @@
-{{
-    config(
-        materialized='table',
-        schema='SOC'
-    )
-}}
-
 SELECT
     ROOM_NUM,
     ROOM_NAME,

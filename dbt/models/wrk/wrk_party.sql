@@ -1,10 +1,3 @@
-{{
-    config(
-        materialized='table',
-        schema='WRK'
-    )
-}}
-
 -- Personnel
 SELECT
     ID_PERSONNEL        AS SRC_ID,

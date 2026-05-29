@@ -1,10 +1,3 @@
-{{
-    config(
-        materialized='table',
-        schema='WRK'
-    )
-}}
-
 SELECT
     NO_CHAMBRE      AS ROOM_NUM,
     NOM_CHAMBRE     AS ROOM_NAME,

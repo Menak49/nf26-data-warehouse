@@ -1,10 +1,3 @@
-{{
-    config(
-        materialized='table',
-        schema='SOC'
-    )
-}}
-
 SELECT
     ROW_NUMBER() OVER (
         ORDER BY SRC_TYP, SRC_ID
