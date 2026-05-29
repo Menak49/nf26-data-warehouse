@@ -5,6 +5,10 @@
 -- Note        : Idempotent — CREATE OR REPLACE recree les tables à chaque execution (comportement attendu pour STG)
 -- =============================================================
 
+
+
+-- 5 ELLES SONT OU LES FK et les PK?
+
 USE DATABASE STG;
 USE SCHEMA PUBLIC;
 
