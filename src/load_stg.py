@@ -45,5 +45,10 @@ conn = None  #  connexion Snowflake
 
 for table, config in TABLE_CONFIG.items():
     chemin = DATA_DIR / config["fichier"]
+
+    if not chemin.exists():
+        print(f"{table} : fichier introuvable ({chemin}), table ignorée")
+        continue
+
     colonnes, donnees = lire_fichier(chemin)
     inserer(conn, table, colonnes, donnees, config["mode"])
