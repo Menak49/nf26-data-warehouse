@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: wrk_room
+    description: "Nettoyage et validation des chambres depuis STG"
+  - name: wrk_medicine
+    description: "Nettoyage et validation des médicaments depuis STG"
+  - name: wrk_party
+    description: "Unification personnel et patients depuis STG"
+  - name: soc_room
+    description: "Table de référence des chambres"
+  - name: soc_medicine
+    description: "Table de référence des médicaments avec surrogate key"
+  - name: soc_party
+    description: "Table de référence des tiers (personnel + patients) avec surrogate key"
