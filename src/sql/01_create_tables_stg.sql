@@ -27,7 +27,7 @@ CREATE OR REPLACE TABLE STG.PUBLIC.CHAMBRE (
 -- Source : MEDICAMENT_YYYYMMDD.txt
 -- -------------------------------------------------------------
 CREATE OR REPLACE TABLE STG.PUBLIC.MEDICAMENT (
-    CD_MEDICAMENT       INTEGER,   # 1 Tu es passé de varchar 10 à int ?
+    CD_MEDICAMENT       INTEGER,   --# 1 Tu es passé de varchar 10 à int ?
     NOM_MEDICAMENT      VARCHAR(250),
     CONDIT_MEDICAMENT   VARCHAR(100),
     CATG_MEDICAMENT     VARCHAR(100),
@@ -85,10 +85,10 @@ CREATE OR REPLACE TABLE STG.PUBLIC.CONSULTATION (
     ID_PATIENT          INTEGER,
     TS_DEBUT_CONSULT    TIMESTAMP,
     TS_FIN_CONSULT      TIMESTAMP,
-    POIDS_PATIENT       FLOAT,  # 2 passé de int à float pour permettre les décimales
-    TEMP_PATIENT        FLOAT, # 3 mm chose
+    POIDS_PATIENT       FLOAT, -- # 2 passé de int à float pour permettre les décimales
+    TEMP_PATIENT        FLOAT, --# 3 mm chose
     UNIT_TEMP           VARCHAR(15),
-    TENSION_PATIENT     FLOAT,  # 4 mm chose
+    TENSION_PATIENT     FLOAT,  --# 4 mm chose
     DSC_PATHO           VARCHAR(250),
     INDIC_DIABETE       VARCHAR(10), 
     ID_TRAITEMENT       INTEGER,
