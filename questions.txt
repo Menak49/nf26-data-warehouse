@@ -18,3 +18,7 @@ Commentaires Paul:
 - Mettre en UNIQUE le couple (SRC_ID, SRC_TYP) de R_PART
 - TRET_ID de O_CONS est un TIMESTAMP dans l'excel mais vous l'avez mis en int, c'est normal ?
 - ROOM_NUM est une FK de O_HOSP mais les attributs n'ont pas le même type entre les 2 tables (smallint et int)
+
+
+
+Pour la tension temperature poid, on peut pas passer de int à float?
