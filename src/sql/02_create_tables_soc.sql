@@ -1,3 +1,7 @@
+
+-- ELLES SONT OU LES FK? 
+
+
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.R_ROOM (
     ROOM_NUM        INTEGER         NOT NULL,
     ROOM_NAME       VARCHAR(20)     NOT NULL,
@@ -88,7 +92,7 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_CONS (
     BLD_PRSS        INTEGER,
     PATH_DSC        VARCHAR(250),
     DIBT_IND        BYTEINT,
-    TRET_ID         TIMESTAMP(0),
+    TRET_ID         TIMESTAMP(0), --1 passé de int à time? un id devrait rester un int, ds le excel y erreur car ds traitement c est un int et ds consul timestamp
     HOSP_IND        BYTEINT,
     EXEC_ID         INTEGER         NOT NULL,
     PRIMARY KEY (CONS_ID)
