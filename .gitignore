@@ -8,3 +8,6 @@ presentationProjet.pdf
 venv
 .mypy_cache
 .env
+target/
+dbt_packages/
+logs/
