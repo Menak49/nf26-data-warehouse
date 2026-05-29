@@ -1,6 +1,9 @@
-
--- ELLES SONT OU LES FK? 
-
+-- =============================================================
+-- Script      : 02_create_tables_soc.sql
+-- Description : Creation des tables de la zone Socle (SOC)
+-- Date        : 2026-05-29
+-- Note        : Idempotent — CREATE IF NOT EXISTS (dipao 5 TD1)
+-- =============================================================
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.R_ROOM (
     ROOM_NUM        INTEGER         NOT NULL,
@@ -10,7 +13,7 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.R_ROOM (
     ROOM_TYP        VARCHAR(10),
     ROOM_DAY_RATE   SMALLINT        NOT NULL,
     CRTN_DT         DATE            NOT NULL,
-    EXEC_ID         INTEGER         NOT NULL,
+    EXEC_ID         INTEGER         NOT NULL, --   REFERENCES T_SUIV_TRMT(EXEC_ID), -- pas dans le même script ni la même BDD donc comment faire ?
     PRIMARY KEY (ROOM_NUM)
 );
 
@@ -33,7 +36,7 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.R_PART (
 );
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_INDV (
-    PART_ID         INTEGER         NOT NULL,
+    PART_ID         INTEGER         NOT NULL    REFERENCES R_PART(PART_ID),
     INDV_NAME       VARCHAR(100)    NOT NULL,
     INDV_FIRS_NAME  VARCHAR(100)    NOT NULL,
     INDV_STTS_CD    VARCHAR(10)     NOT NULL,
@@ -48,7 +51,7 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_INDV (
 );
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_STFF (
-    PART_ID         INTEGER         NOT NULL,
+    PART_ID         INTEGER         NOT NULL    REFERENCES R_PART(PART_ID),
     WORK_STRT_DTTM  TIMESTAMP(0)    NOT NULL,
     WORK_END_DTTM   TIMESTAMP(0),
     WORK_END_RESN   VARCHAR(100),
@@ -57,7 +60,7 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_STFF (
 );
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_TELP (
-    PART_ID         INTEGER         NOT NULL,
+    PART_ID         INTEGER         NOT NULL    REFERENCES R_PART(PART_ID),
     CNTR_IND        VARCHAR(5),
     TELP_NUM        VARCHAR(20)     NOT NULL,
     STRT_VALD_DTTM  TIMESTAMP(0)    NOT NULL,
@@ -67,7 +70,7 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_TELP (
 );
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_ADDR (
-    PART_ID         INTEGER         NOT NULL,
+    PART_ID         INTEGER         NOT NULL    REFERENCES R_PART(PART_ID),
     STRT_NUM        VARCHAR(10)     NOT NULL,
     STRT_DSC        VARCHAR(250)    NOT NULL,
     COMP_STRT       VARCHAR(250),
@@ -82,8 +85,8 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_ADDR (
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_CONS (
     CONS_ID         INTEGER         NOT NULL,
-    STFF_ID         INTEGER         NOT NULL,
-    PATN_ID         INTEGER         NOT NULL,
+    STFF_ID         INTEGER         NOT NULL    REFERENCES O_STFF(PART_ID),
+    PATN_ID         INTEGER         NOT NULL    REFERENCES O_INDV(PART_ID),
     CONS_STRT_DTTM  TIMESTAMP(0)    NOT NULL,
     CONS_END_DTTM   TIMESTAMP(0)    NOT NULL,
     PATN_WEGH       INTEGER         NOT NULL,
@@ -92,7 +95,7 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_CONS (
     BLD_PRSS        INTEGER,
     PATH_DSC        VARCHAR(250),
     DIBT_IND        BYTEINT,
-    TRET_ID         TIMESTAMP(0), --1 passé de int à time? un id devrait rester un int, ds le excel y erreur car ds traitement c est un int et ds consul timestamp
+    TRET_ID         INTEGER                     REFERENCES R_PART(PART_ID),
     HOSP_IND        BYTEINT,
     EXEC_ID         INTEGER         NOT NULL,
     PRIMARY KEY (CONS_ID)
@@ -100,22 +103,22 @@ CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_CONS (
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_HOSP (
     HOSP_ID         INTEGER         NOT NULL,
-    CONS_ID         INTEGER         NOT NULL,
-    ROOM_NUM        SMALLINT        NOT NULL,
+    CONS_ID         INTEGER         NOT NULL    REFERENCES O_CONS(CONS_ID),
+    ROOM_NUM        INTEGER         NOT NULL    REFERENCES R_ROOM(ROOM_NUM),
     HOSP_STRT_DTTM  TIMESTAMP(0)    NOT NULL,
     HOSP_END_DTTM   TIMESTAMP(0)    NOT NULL,
     HOSP_FINL_RATE  FLOAT           NOT NULL,
-    STFF_ID         INTEGER         NOT NULL,
+    STFF_ID         INTEGER         NOT NULL    REFERENCES O_STFF(PART_ID),
     EXEC_ID         INTEGER         NOT NULL,
     PRIMARY KEY (HOSP_ID)
 );
 
 CREATE TABLE IF NOT EXISTS SOC.PUBLIC.O_TRET (
     TRET_ID         INTEGER         NOT NULL,
-    MEDC_ID         INTEGER,
+    MEDC_ID         INTEGER                     REFERENCES R_MEDC(MEDC_ID),
     MEDC_QTY        SMALLINT,
     DOSG_DSC        VARCHAR(100)    NOT NULL,
-    CONS_ID         INTEGER         NOT NULL,
+    CONS_ID         INTEGER         NOT NULL    REFERENCES O_CONS(CONS_ID),
     TRET_CRTN_DTTM  TIMESTAMP(0)    NOT NULL,
     EXEC_ID         INTEGER         NOT NULL,
     PRIMARY KEY (TRET_ID)
