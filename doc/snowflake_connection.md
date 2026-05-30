@@ -52,7 +52,7 @@ ALTER USER [TON_USER] SET RSA_PUBLIC_KEY='MIIBIjANBgkq...';
 pip install snowflake-connector-python python-dotenv
 ```
 
-Le fichier install_sid.py devra se connecter a snowflake et ajouter les base de données. Le fichier `logs/install_sid.log` contiendra le détail de chaque étape :
+Le fichier install_sid.py devra se connecter a snowflake et ajouter les base de données et run les fichiers sql de 0 à 4 dans l'environnement Snowflake. En plus de cela, il devra faire un fichier de log qui retrace les opérations qu'il effectue. Le fichier `logs/install_sid.log` contiendra le détail de chaque étape :
 
 ```
 2026-05-29 10:00:00 - INFO - === DEBUT INSTALLATION SID ===
