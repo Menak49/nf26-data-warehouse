@@ -1,9 +1,11 @@
 """Execute le sid"""
 
-import snowflake.connector as snf
+import sys
+import time
+import os
 import logging
 from dotenv import load_dotenv
-import os
+import snowflake.connector as snf
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 
@@ -12,6 +14,15 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
+log = logging.getLogger(__name__)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SQL_DIR = os.path.join(SCRIPT_DIR, "sql")
+SQL_SCRIPTS = [
+    "src/sql/00_create_databases.sql",
+    "src/sql/01_create_tables_stg.sql",
+    "src/sql/02_create_tables_soc.sql",
+    "src/sql/03_create_tables_tch.sql",
+]
 
 
 def init_snowflake_connexion() -> snf.SnowflakeConnection:
@@ -47,44 +58,57 @@ def init_snowflake_connexion() -> snf.SnowflakeConnection:
         return conn
     except Exception as e:
         print(e)
-        logging.error("Connection failed, one of the .env information may be wrong")
+        log.error("Connection failed, one of the .env information may be wrong")
         raise ValueError(
             "Connection failed, one of the .env information may be wrong"
         ) from e
 
 
-def execute_sql_file(cursor, filepath):
+def execute_sql_file(cursor, filepath) -> bool:
     """Execute sql file and print logs"""
-    logging.info("Execution of %s", filepath)
+    log.info("Execution of %s", filepath)
     with open(filepath, "r", encoding="utf8") as f:
         sql = f.read()
 
     # Execute every statement (split with ;)
+    ok, ko = 0, 0
     for statement in sql.split(";"):
         statement = statement.strip()
-        if statement:
+        if not statement:
+            continue
+        try:
             cursor.execute(statement)
+            ok += 1
+        except Exception as e:
+            ko += 1
+            log.error(" %s", e)
 
-    logging.info("%s executed successfully", filepath)
+    log.info("%s executed: %d OK, %d KO", filepath, ok, ko)
+    return ko == 0
 
 
-def main():
-    """Apply sql files 0, 1, 2, 3, 4 to complete the seed"""
+def main() -> bool:
+    """Apply sql files 0, 1, 2, 3, 4 to complete the sid"""
+    t0 = time.time()
+    log.info("SID INSTALLATION")
+    if not os.path.isdir(SQL_DIR):
+        log.error("SQL_DIR introuvable : %s", SQL_DIR)
+        return False
+
     conn = init_snowflake_connexion()
-    scripts = [
-        "src/sql/00_create_databases.sql",
-        "src/sql/01_create_tables_stg.sql",
-        "src/sql/02_create_tables_soc.sql",
-        "src/sql/03_create_tables_tch.sql",
-    ]
 
-    for script in scripts:
-        execute_sql_file(conn.cursor(), script)
+    success = True
+    for script in SQL_SCRIPTS:
+        success &= execute_sql_file(conn.cursor(), script)
 
     conn.cursor().close()
     conn.close()
-    logging.info("SID install ended succefully.")
+    if success:
+        log.info("Installation ended successfully in %d s", time.time() - t0)
+    else:
+        log.error("Installation failed in %d s", time.time() - t0)
+    return success
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(0 if main() else 1)
