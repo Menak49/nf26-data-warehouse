@@ -6,14 +6,14 @@
 --               a chaque execution (comportement attendu pour STG)
 -- =============================================================
 
-USE DATABASE STG;
-USE SCHEMA PUBLIC;
+USE DATABASE NF26_HOSPITAL;
+USE SCHEMA STG;
 
 -- -------------------------------------------------------------
 -- CHAMBRE
 -- Source : CHAMBRE_YYYYMMDD.txt
 -- -------------------------------------------------------------
-CREATE OR REPLACE TABLE STG.PUBLIC.CHAMBRE (
+CREATE OR REPLACE TABLE STG.CHAMBRE (
     NO_CHAMBRE      INTEGER         NOT NULL,
     NOM_CHAMBRE     VARCHAR(20)     NOT NULL,
     NO_ETAGE        BYTEINT,
@@ -27,7 +27,7 @@ CREATE OR REPLACE TABLE STG.PUBLIC.CHAMBRE (
 -- MEDICAMENT
 -- Source : MEDICAMENT_YYYYMMDD.txt
 -- -------------------------------------------------------------
-CREATE OR REPLACE TABLE STG.PUBLIC.MEDICAMENT (
+CREATE OR REPLACE TABLE STG.MEDICAMENT (
     CD_MEDICAMENT       VARCHAR(10)     NOT NULL,
     NOM_MEDICAMENT      VARCHAR(250),
     CONDIT_MEDICAMENT   VARCHAR(100),
@@ -39,7 +39,7 @@ CREATE OR REPLACE TABLE STG.PUBLIC.MEDICAMENT (
 -- PERSONNEL
 -- Source : PERSONNEL_YYYYMMDD.txt
 -- -------------------------------------------------------------
-CREATE OR REPLACE TABLE STG.PUBLIC.PERSONNEL (
+CREATE OR REPLACE TABLE STG.PERSONNEL (
     ID_PERSONNEL            INTEGER         NOT NULL,
     NOM_PERSONNEL           VARCHAR(100)    NOT NULL,
     PRENOM_PERSONNEL        VARCHAR(100)    NOT NULL,
@@ -56,7 +56,7 @@ CREATE OR REPLACE TABLE STG.PUBLIC.PERSONNEL (
 -- PATIENT
 -- Source : PATIENT_YYYYMMDD.txt
 -- -------------------------------------------------------------
-CREATE OR REPLACE TABLE STG.PUBLIC.PATIENT (
+CREATE OR REPLACE TABLE STG.PATIENT (
     ID_PATIENT          INTEGER         NOT NULL,
     NOM_PATIENT         VARCHAR(100)    NOT NULL,
     PRENOM_PATIENT      VARCHAR(100)    NOT NULL,
@@ -80,7 +80,7 @@ CREATE OR REPLACE TABLE STG.PUBLIC.PATIENT (
 -- CONSULTATION
 -- Source : CONSULTATION_YYYYMMDD.txt
 -- -------------------------------------------------------------
-CREATE OR REPLACE TABLE STG.PUBLIC.CONSULTATION (
+CREATE OR REPLACE TABLE STG.CONSULTATION (
     ID_CONSULT          INTEGER         NOT NULL,
     ID_PERSONNEL        INTEGER         NOT NULL,
     ID_PATIENT          INTEGER         NOT NULL,
@@ -100,7 +100,7 @@ CREATE OR REPLACE TABLE STG.PUBLIC.CONSULTATION (
 -- TRAITEMENT
 -- Source : TRAITEMENT_YYYYMMDD.txt
 -- -------------------------------------------------------------
-CREATE OR REPLACE TABLE STG.PUBLIC.TRAITEMENT (
+CREATE OR REPLACE TABLE STG.TRAITEMENT (
     ID_TRAITEMENT           INTEGER         NOT NULL,
     CD_MEDICAMENT           INTEGER         NOT NULL,
     CATG_MEDICAMENT         VARCHAR(100)    NOT NULL,
@@ -115,7 +115,7 @@ CREATE OR REPLACE TABLE STG.PUBLIC.TRAITEMENT (
 -- HOSPITALISATION
 -- Source : HOSPITALISATION_YYYYMMDD.txt
 -- -------------------------------------------------------------
-CREATE OR REPLACE TABLE STG.PUBLIC.HOSPITALISATION (
+CREATE OR REPLACE TABLE STG.HOSPITALISATION (
     ID_HOSPI            INTEGER         NOT NULL,
     ID_CONSULT_HOSPI    INTEGER         NOT NULL,
     NO_CHAMBRE_HOSPI    SMALLINT        NOT NULL,
