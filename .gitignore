@@ -14,3 +14,5 @@ presentationProjet.pdf
 .mypy_cache
 .env
 airflow/
+dbt/profiles.yml
+dbt/.user.yml

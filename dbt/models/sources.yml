@@ -2,10 +2,13 @@ version: 2
 
 sources:
   - name: STG
-    database: NF26_DW
+    database: NF26_HOSPITAL
     schema: STG
     tables:
       - name: CHAMBRE
       - name: MEDICAMENT
       - name: PERSONNEL
       - name: PATIENT
+      - name: CONSULTATION
+      - name: HOSPITALISATION
+      - name: TRAITEMENT
