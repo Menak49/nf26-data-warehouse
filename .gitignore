@@ -11,3 +11,4 @@ rsa_key.pem
 presentationProjet.pdf
 .mypy_cache
 .env
+airflow/
