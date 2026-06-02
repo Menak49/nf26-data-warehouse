@@ -23,6 +23,8 @@ python3 src/load_stg.py 20260429
 
 Avant de pouvoir run le script, il faut créer un dossier _logs_ à la racine du projet. Les fichiers de log pour le sid et le load stg seront insérés ici.
 
+Pour pouvoir load le STG sans erreur, il faut que vous ayez les données dans ce chemin: _Inputs_Projets_NF26_AI07/Inputs_Projets_NF26_AI07/Data Hospital_.
+
 _install_sid.py_ créer les bases de données sur Snowflake.
 _load_stg.py_ insère les données d'un certain jour (dans l'exemple on insère les données du 29/04/2026).
 
