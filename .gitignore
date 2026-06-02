@@ -1,6 +1,7 @@
 Data
 .venv/
 venv/
+*/__pycache__/
 logs/
 dbt/logs/
 dbt/target/

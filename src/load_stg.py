@@ -1,12 +1,20 @@
 import os
 import sys
 import time
-import logging
 import tempfile
 import pandas as pd
+import logging
 import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
-from sf_config import SNOWFLAKE_CONFIG
+from snowflake_conn import init_snowflake_connexion
+
+logging.basicConfig(
+    filename="logs/load_stg.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+log = logging.getLogger(__name__)
+
 
 # --- Date : passée en argument
 DATE = sys.argv[1] if len(sys.argv) > 1 else None  # ex: python load_stg.py 20260430
@@ -17,8 +25,7 @@ DATA_PATH = os.path.abspath(
     os.path.join(
         SCRIPT_DIR,
         "..",
-        "Inputs_Projets_NF26_AI07",
-        "Inputs_Projets_NF26_AI07",
+        "Data",
         "Data Hospital",
         f"BDD_HOSPITAL_{DATE}",
     )
@@ -90,14 +97,6 @@ TABLE_CONFIG = {
     },
 }
 
-INGEST_CONFIG = dict(SNOWFLAKE_CONFIG, schema="STG")
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-log = logging.getLogger(__name__)
 
 # --- Tracking TCH ---
 
@@ -105,8 +104,8 @@ log = logging.getLogger(__name__)
 def run_start(conn):
     with conn.cursor() as c:
         c.execute("""INSERT INTO TCH.T_SUIV_RUN (RUN_ID, RUN_STRT_DTTM, RUN_STTS_CD)
-                     SELECT COALESCE(MAX(RUN_ID),0)+1, CURRENT_TIMESTAMP(0), 'ENC'
-                     FROM TCH.T_SUIV_RUN""")
+                    SELECT COALESCE(MAX(RUN_ID),0)+1, CURRENT_TIMESTAMP(0), 'ENC'
+                    FROM TCH.T_SUIV_RUN""")
         c.execute("SELECT MAX(RUN_ID) FROM TCH.T_SUIV_RUN")
         run_id = c.fetchone()[0]
     log.info(f"RUN démarré → RUN_ID = {run_id}")
@@ -117,8 +116,8 @@ def run_end(conn, run_id, status):
     with conn.cursor() as c:
         c.execute(
             """UPDATE TCH.T_SUIV_RUN
-                     SET RUN_END_DTTM=CURRENT_TIMESTAMP(0), RUN_STTS_CD=%s
-                     WHERE RUN_ID=%s""",
+                    SET RUN_END_DTTM=CURRENT_TIMESTAMP(0), RUN_STTS_CD=%s
+                    WHERE RUN_ID=%s""",
             (status, run_id),
         )
     log.info(f"RUN {run_id} terminé → {status}")
@@ -130,8 +129,8 @@ def exec_start(conn, run_id, name):
         exec_id = c.fetchone()[0]
         c.execute(
             """INSERT INTO TCH.T_SUIV_TRMT
-                     (EXEC_ID, RUN_ID, SCRPT_NAME, EXEC_STRT_DTTM, EXEC_STTS_CD)
-                     VALUES (%s, %s, %s, CURRENT_TIMESTAMP(0), 'ENC')""",
+                    (EXEC_ID, RUN_ID, SCRPT_NAME, EXEC_STRT_DTTM, EXEC_STTS_CD)
+                    VALUES (%s, %s, %s, CURRENT_TIMESTAMP(0), 'ENC')""",
             (exec_id, run_id, name),
         )
     return exec_id
@@ -141,8 +140,8 @@ def exec_end(conn, exec_id, status):
     with conn.cursor() as c:
         c.execute(
             """UPDATE TCH.T_SUIV_TRMT
-                     SET EXEC_END_DTTM=CURRENT_TIMESTAMP(0), EXEC_STTS_CD=%s
-                     WHERE EXEC_ID=%s""",
+                    SET EXEC_END_DTTM=CURRENT_TIMESTAMP(0), EXEC_STTS_CD=%s
+                    WHERE EXEC_ID=%s""",
             (status, exec_id),
         )
 
@@ -232,10 +231,10 @@ def load(conn, table, df):
         with conn.cursor() as c:
             c.execute(f"PUT 'file://{path}' {stage} OVERWRITE=TRUE AUTO_COMPRESS=TRUE")
             c.execute(f"""COPY INTO NF26_HOSPITAL.STG.{table}
-                          FROM {stage}/{table}.csv.gz
-                          FILE_FORMAT = (TYPE=CSV FIELD_DELIMITER='\\x01'
-                                         NULL_IF=('') EMPTY_FIELD_AS_NULL=TRUE)
-                          ON_ERROR = 'ABORT_STATEMENT'""")
+                        FROM {stage}/{table}.csv.gz
+                        FILE_FORMAT = (TYPE=CSV FIELD_DELIMITER='\\x01'
+                                        NULL_IF=('') EMPTY_FIELD_AS_NULL=TRUE)
+                        ON_ERROR = 'ABORT_STATEMENT'""")
             c.execute(f"REMOVE {stage}")
             c.execute(f"SELECT COUNT(*) FROM NF26_HOSPITAL.STG.{table}")
             n = c.fetchone()[0]
@@ -266,7 +265,7 @@ def main():
         log.error(f"Aucun fichier trouvé dans {DATA_PATH}")
         return False
 
-    conn = snowflake.connector.connect(**INGEST_CONFIG)
+    conn = init_snowflake_connexion()
     run_id = run_start(conn)
     success = True
 
