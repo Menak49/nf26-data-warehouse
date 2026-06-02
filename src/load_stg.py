@@ -8,15 +8,17 @@ import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
 from sf_config import SNOWFLAKE_CONFIG
 
-# --- Chemins ---
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH  = os.path.abspath(os.path.join(
-    SCRIPT_DIR, "..", "..",
-    "Inputs_Projets_NF26_AI07", "Inputs_Projets_NF26_AI07", "Data Hospital",
-))
+
 
 # --- Date : passée en argument
 DATE = sys.argv[1] if len(sys.argv) > 1 else None  # ex: python load_stg.py 20260430
+
+# --- Chemins ---
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH  = os.path.abspath(os.path.join(
+    SCRIPT_DIR, "..",
+    "Inputs_Projets_NF26_AI07", "Inputs_Projets_NF26_AI07", "Data Hospital", f"BDD_HOSPITAL_{DATE}",
+))
 
 TABLE_CONFIG = {
     "CHAMBRE": {
@@ -188,6 +190,9 @@ def load(conn, table, df):
 # --- Point d'entrée ---
 
 def main():
+    print("DATA_PATH =", DATA_PATH)
+    print("exists =", os.path.exists(DATA_PATH))
+
     t0 = time.time()
     log.info("=" * 50)
     log.info(f"LOT 2.2 - INGESTION TXT → STG  (date={DATE or 'tous les jours'})")
