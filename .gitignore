@@ -1,11 +1,14 @@
 Data
 .venv/
+venv/
 logs/
+dbt/logs/
+dbt/target/
+dbt/dbt_packages/
 rsa_key.p8
 rsa_key.pub
 rsa_key.pem
 presentationProjet.pdf
-venv
 .mypy_cache
 .env
 airflow/

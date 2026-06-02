@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: STG
+    database: NF26_DW
+    schema: STG
+    tables:
+      - name: CHAMBRE
+      - name: MEDICAMENT
+      - name: PERSONNEL
+      - name: PATIENT

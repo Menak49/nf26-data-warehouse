@@ -1,0 +1,19 @@
+name: 'nf26_smart_teem'
+version: '1.0.0'
+profile: 'nf26_smart_teem'
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  nf26_smart_teem:
+    wrk:
+      +materialized: table
+      +schema: WRK
+    soc:
+      +materialized: table
+      +schema: SOC
