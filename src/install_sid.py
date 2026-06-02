@@ -56,7 +56,7 @@ def main() -> bool:
         log.error("SQL_DIR introuvable : %s", SQL_DIR)
         return False
 
-    conn = init_snowflake_connexion()
+    conn = init_snowflake_connexion(log)
 
     success = True
     for script in SQL_SCRIPTS:

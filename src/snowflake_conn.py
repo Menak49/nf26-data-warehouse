@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import snowflake.connector as snf
 
 
-def init_snowflake_connexion() -> snf.SnowflakeConnection:
+def init_snowflake_connexion(log) -> snf.SnowflakeConnection:
     """Create Snowflake link"""
     load_dotenv()
 

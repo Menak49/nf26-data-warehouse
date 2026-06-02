@@ -25,7 +25,8 @@ DATA_PATH = os.path.abspath(
     os.path.join(
         SCRIPT_DIR,
         "..",
-        "Data",
+        "Inputs_Projets_NF26_AI07",
+        "Inputs_Projets_NF26_AI07",
         "Data Hospital",
         f"BDD_HOSPITAL_{DATE}",
     )
@@ -265,7 +266,7 @@ def main():
         log.error(f"Aucun fichier trouvé dans {DATA_PATH}")
         return False
 
-    conn = init_snowflake_connexion()
+    conn = init_snowflake_connexion(log)
     run_id = run_start(conn)
     success = True
 
