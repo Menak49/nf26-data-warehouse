@@ -8,50 +8,85 @@ import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
 from sf_config import SNOWFLAKE_CONFIG
 
-
-
 # --- Date : passée en argument
 DATE = sys.argv[1] if len(sys.argv) > 1 else None  # ex: python load_stg.py 20260430
 
 # --- Chemins ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH  = os.path.abspath(os.path.join(
-    SCRIPT_DIR, "..",
-    "Inputs_Projets_NF26_AI07", "Inputs_Projets_NF26_AI07", "Data Hospital", f"BDD_HOSPITAL_{DATE}",
-))
+DATA_PATH = os.path.abspath(
+    os.path.join(
+        SCRIPT_DIR,
+        "..",
+        "Inputs_Projets_NF26_AI07",
+        "Inputs_Projets_NF26_AI07",
+        "Data Hospital",
+        f"BDD_HOSPITAL_{DATE}",
+    )
+)
 
 TABLE_CONFIG = {
     "CHAMBRE": {
-        "mode": "full", "pk": "NO_CHAMBRE",
-        "notnull": ["NOM_CHAMBRE", "PRIX_JOUR", "DT_CREATION"]
+        "mode": "full",
+        "pk": "NO_CHAMBRE",
+        "notnull": ["NOM_CHAMBRE", "PRIX_JOUR", "DT_CREATION"],
     },
     "MEDICAMENT": {
-        "mode": "full", "pk": "CD_MEDICAMENT",
-        "notnull": ["NOM_MEDICAMENT", "CATG_MEDICAMENT", "MARQUE_FABRI"]
+        "mode": "full",
+        "pk": "CD_MEDICAMENT",
+        "notnull": ["NOM_MEDICAMENT", "CATG_MEDICAMENT", "MARQUE_FABRI"],
     },
     "PERSONNEL": {
-        "mode": "full", "pk": "ID_PERSONNEL",
-        "notnull": ["NOM_PERSONNEL", "PRENOM_PERSONNEL", "FONCTION_PERSONNEL",
-                    "TS_CREATION_PERSONNEL", "TS_MAJ_PERSONNEL", "CD_STATUT_PERSONNEL"]
+        "mode": "full",
+        "pk": "ID_PERSONNEL",
+        "notnull": [
+            "NOM_PERSONNEL",
+            "PRENOM_PERSONNEL",
+            "FONCTION_PERSONNEL",
+            "TS_CREATION_PERSONNEL",
+            "TS_MAJ_PERSONNEL",
+            "CD_STATUT_PERSONNEL",
+        ],
     },
     "PATIENT": {
-        "mode": "delta", "pk": "ID_PATIENT",
-        "notnull": ["NOM_PATIENT", "PRENOM_PATIENT", "DT_NAISS",
-                    "VILLE_NAISS", "PAYS_NAISS", "NUM_SECU",
-                    "TS_CREATION_PATIENT", "TS_MAJ_PATIENT"]
+        "mode": "delta",
+        "pk": "ID_PATIENT",
+        "notnull": [
+            "NOM_PATIENT",
+            "PRENOM_PATIENT",
+            "DT_NAISS",
+            "VILLE_NAISS",
+            "PAYS_NAISS",
+            "NUM_SECU",
+            "TS_CREATION_PATIENT",
+            "TS_MAJ_PATIENT",
+        ],
     },
     "CONSULTATION": {
-        "mode": "delta", "pk": "ID_CONSULT",
-        "notnull": ["ID_PERSONNEL", "ID_PATIENT", "TS_DEBUT_CONSULT", "TS_FIN_CONSULT"]
+        "mode": "delta",
+        "pk": "ID_CONSULT",
+        "notnull": ["ID_PERSONNEL", "ID_PATIENT", "TS_DEBUT_CONSULT", "TS_FIN_CONSULT"],
     },
     "TRAITEMENT": {
-        "mode": "delta", "pk": "ID_TRAITEMENT",
-        "notnull": ["CD_MEDICAMENT", "CATG_MEDICAMENT", "MARQUE_FABRI",
-                    "QTE_MEDICAMENT", "ID_CONSULT", "TS_CREATION_TRAITEMENT"]
+        "mode": "delta",
+        "pk": "ID_TRAITEMENT",
+        "notnull": [
+            "CD_MEDICAMENT",
+            "CATG_MEDICAMENT",
+            "MARQUE_FABRI",
+            "QTE_MEDICAMENT",
+            "ID_CONSULT",
+            "TS_CREATION_TRAITEMENT",
+        ],
     },
     "HOSPITALISATION": {
-        "mode": "delta", "pk": "ID_HOSPI",
-        "notnull": ["ID_CONSULT_HOSPI", "NO_CHAMBRE_HOSPI", "TS_DEBUT_HOSPI", "ID_PERSONNEL_RESP"]
+        "mode": "delta",
+        "pk": "ID_HOSPI",
+        "notnull": [
+            "ID_CONSULT_HOSPI",
+            "NO_CHAMBRE_HOSPI",
+            "TS_DEBUT_HOSPI",
+            "ID_PERSONNEL_RESP",
+        ],
     },
 }
 
@@ -60,11 +95,12 @@ INGEST_CONFIG = dict(SNOWFLAKE_CONFIG, schema="STG")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S"
+    datefmt="%H:%M:%S",
 )
 log = logging.getLogger(__name__)
 
 # --- Tracking TCH ---
+
 
 def run_start(conn):
     with conn.cursor() as c:
@@ -76,30 +112,43 @@ def run_start(conn):
     log.info(f"RUN démarré → RUN_ID = {run_id}")
     return run_id
 
+
 def run_end(conn, run_id, status):
     with conn.cursor() as c:
-        c.execute("""UPDATE TCH.T_SUIV_RUN
+        c.execute(
+            """UPDATE TCH.T_SUIV_RUN
                      SET RUN_END_DTTM=CURRENT_TIMESTAMP(0), RUN_STTS_CD=%s
-                     WHERE RUN_ID=%s""", (status, run_id))
+                     WHERE RUN_ID=%s""",
+            (status, run_id),
+        )
     log.info(f"RUN {run_id} terminé → {status}")
+
 
 def exec_start(conn, run_id, name):
     with conn.cursor() as c:
         c.execute("SELECT TCH.SEQ_EXEC_ID.NEXTVAL")
         exec_id = c.fetchone()[0]
-        c.execute("""INSERT INTO TCH.T_SUIV_TRMT
+        c.execute(
+            """INSERT INTO TCH.T_SUIV_TRMT
                      (EXEC_ID, RUN_ID, SCRPT_NAME, EXEC_STRT_DTTM, EXEC_STTS_CD)
                      VALUES (%s, %s, %s, CURRENT_TIMESTAMP(0), 'ENC')""",
-                  (exec_id, run_id, name))
+            (exec_id, run_id, name),
+        )
     return exec_id
+
 
 def exec_end(conn, exec_id, status):
     with conn.cursor() as c:
-        c.execute("""UPDATE TCH.T_SUIV_TRMT
+        c.execute(
+            """UPDATE TCH.T_SUIV_TRMT
                      SET EXEC_END_DTTM=CURRENT_TIMESTAMP(0), EXEC_STTS_CD=%s
-                     WHERE EXEC_ID=%s""", (status, exec_id))
+                     WHERE EXEC_ID=%s""",
+            (status, exec_id),
+        )
+
 
 # --- Découverte des fichiers ---
+
 
 def discover():
     """
@@ -116,7 +165,7 @@ def discover():
             # Nom fichier : NOMTABLE_YYYYMMDD.txt → 2 parties
             # Mais HOSPITALISATION_YYYYMMDD → split donne plus de 2 parties
             # donc on prend tout sauf le dernier élément comme nom de table
-            date  = parts[-1]
+            date = parts[-1]
             table = "_".join(parts[:-1]).upper()
             if table not in TABLE_CONFIG:
                 continue
@@ -127,7 +176,9 @@ def discover():
         by_table[t].sort()
     return by_table
 
+
 # --- Construction du DataFrame ---
+
 
 def build_df(table, files):
     cfg = TABLE_CONFIG[table]
@@ -141,20 +192,30 @@ def build_df(table, files):
     if cols_required:
         n0 = len(df)
         df = df.dropna(subset=cols_required)
-        df = df[(df[cols_required].astype(str).apply(lambda s: s.str.strip()) != "").all(axis=1)]
+        df = df[
+            (df[cols_required].astype(str).apply(lambda s: s.str.strip()) != "").all(
+                axis=1
+            )
+        ]
         if len(df) != n0:
             log.info(f"  [filter] {n0 - len(df)} ligne(s) écartée(s)")
 
     return df.reset_index(drop=True)
 
+
 # --- Chargement dans Snowflake ---
+
 
 def load(conn, table, df):
     # Tentative avec write_pandas (le plus rapide)
     try:
         ok, _, n, _ = write_pandas(
-            conn, df, table, schema="STG",
-            quote_identifiers=False, auto_create_table=False
+            conn,
+            df,
+            table,
+            schema="STG",
+            quote_identifiers=False,
+            auto_create_table=False,
         )
         if ok:
             log.info(f"  STG.{table} : {n} lignes chargées (write_pandas)")
@@ -163,7 +224,7 @@ def load(conn, table, df):
         log.warning(f"  write_pandas KO ({e}), fallback CSV+PUT")
 
     # Fallback : PUT + COPY INTO si write_pandas échoue
-    tmp  = tempfile.mkdtemp()
+    tmp = tempfile.mkdtemp()
     path = os.path.join(tmp, f"{table}.csv")
     df.to_csv(path, sep="\x01", index=False, header=False, na_rep="")
     stage = f"@~/ingest_{table}_stage"
@@ -187,7 +248,9 @@ def load(conn, table, df):
         os.remove(path)
         os.rmdir(tmp)
 
+
 # --- Point d'entrée ---
+
 
 def main():
     print("DATA_PATH =", DATA_PATH)
@@ -203,8 +266,8 @@ def main():
         log.error(f"Aucun fichier trouvé dans {DATA_PATH}")
         return False
 
-    conn    = snowflake.connector.connect(**INGEST_CONFIG)
-    run_id  = run_start(conn)
+    conn = snowflake.connector.connect(**INGEST_CONFIG)
+    run_id = run_start(conn)
     success = True
 
     try:
@@ -229,6 +292,7 @@ def main():
 
     log.info(f"{'OK' if success else 'KO'} en {time.time() - t0:.1f}s")
     return success
+
 
 if __name__ == "__main__":
     sys.exit(0 if main() else 1)

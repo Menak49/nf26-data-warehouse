@@ -1,6 +1,6 @@
-name: 'nf26_smart_teem'
-version: '1.0.0'
-profile: 'nf26_smart_teem'
+name: "nf26_hospital"
+version: "1.0.0"
+profile: "nf26_hospital"
 
 model-paths: ["models"]
 macro-paths: ["macros"]
@@ -8,9 +8,21 @@ macro-paths: ["macros"]
 clean-targets:
   - "target"
   - "dbt_packages"
+  - "dbt_modules"
+  - "logs"
+
+# Hooks au niveau RUN : 1 ligne dans TCH.T_SUIV_RUN par exécution dbt
+on-run-start:
+  - "{{ log_run_start() }}"
+on-run-end:
+  - "{{ log_run_end() }}"
 
 models:
-  nf26_smart_teem:
+  nf26_hospital:
+    +pre_hook:
+      - "{{ log_exec_start(this.name) }}"
+    +post_hook:
+      - "{{ log_exec_end(this.name, 'OK') }}"
     wrk:
       +materialized: table
       +schema: WRK
