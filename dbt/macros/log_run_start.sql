@@ -1,18 +1,19 @@
 {% macro log_run_start() %}
   {#
-    Hook onrunstart : crée un nouvel enregistrement dans TCH.T_SUIV_RUN
-    avec un RUN_ID = MAXIMUM(RUN_ID)+1 et statut 'ENC'.
-    Doit être appelé une seule fois par exécution dbt.
+    on-run-start : insère 1 ligne dans T_SUIV_TRMT et T_SUIV_RUN
+    avec un UUID partagé (SCRPT_NAME='DBT_RUN').
   #}
   {% if execute %}
-    {% set q %}
-      INSERT INTO TCH.T_SUIV_RUN (RUN_ID, RUN_STRT_DTTM, RUN_STTS_CD)
-      SELECT COALESCE(MAX(RUN_ID), 0) + 1,
-             CURRENT_TIMESTAMP(0),
-             'ENC'
-      FROM TCH.T_SUIV_RUN
-    {% endset %}
-    {% do run_query(q) %}
-    {{ log("✓ log_run_start : nouveau RUN créé dans TCH.T_SUIV_RUN", info=True) }}
+    {% set q = run_query("SELECT UUID_STRING() AS ID") %}
+    {% set exec_id = q.columns[0].values()[0] %}
+    {% do run_query(
+        "INSERT INTO TCH.T_SUIV_TRMT (EXEC_ID, SCRPT_NAME, EXEC_STRT_DTTM, EXEC_STTS_CD) "
+        "VALUES ('" ~ exec_id ~ "', 'DBT_RUN', CURRENT_TIMESTAMP(0), 'ENC')"
+    ) %}
+    {% do run_query(
+        "INSERT INTO TCH.T_SUIV_RUN (EXEC_ID, RUN_STRT_DTTM, RUN_STTS_CD) "
+        "VALUES ('" ~ exec_id ~ "', CURRENT_TIMESTAMP(0), 'ENC')"
+    ) %}
+    {{ log("✓ log_run_start : EXEC_ID=" ~ exec_id, info=True) }}
   {% endif %}
 {% endmacro %}

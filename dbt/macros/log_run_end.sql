@@ -1,32 +1,31 @@
 {% macro log_run_end(status='OK') %}
   {#
-    Hook on-run-end : clôture le run courant dans TCH.T_SUIV_RUN.
-    Le statut est OK si aucun model na échoué, KO sinon.
-    On utilise la variable dbt 'results' pour détecter les erreurs.
+    on-run-end : clôture la dernière entrée 'DBT_RUN' (T_SUIV_TRMT + T_SUIV_RUN).
+    Statut OK / KO selon dbt 'results'.
   #}
   {% if execute %}
-    {% set final_status = status %}
+    {% set final = status %}
     {% if results is defined %}
-      {% set has_error = namespace(value=false) %}
+      {% set has_err = namespace(v=false) %}
       {% for r in results %}
-        {% if r.status == 'error' %}
-          {% set has_error.value = true %}
-        {% endif %}
+        {% if r.status == 'error' %}{% set has_err.v = true %}{% endif %}
       {% endfor %}
-      {% if has_error.value %}
-        {% set final_status = 'KO' %}
-      {% else %}
-        {% set final_status = 'OK' %}
-      {% endif %}
+      {% set final = 'KO' if has_err.v else 'OK' %}
     {% endif %}
 
-    {% set q %}
-      UPDATE TCH.T_SUIV_RUN
-      SET RUN_END_DTTM = CURRENT_TIMESTAMP(0),
-          RUN_STTS_CD = '{{ final_status }}'
-      WHERE RUN_ID = (SELECT MAX(RUN_ID) FROM TCH.T_SUIV_RUN)
+    {% set lookup %}
+      (SELECT EXEC_ID FROM TCH.T_SUIV_TRMT
+       WHERE SCRPT_NAME = 'DBT_RUN'
+       ORDER BY EXEC_STRT_DTTM DESC LIMIT 1)
     {% endset %}
-    {% do run_query(q) %}
-    {{ log(" log_run_end : RUN clôturé avec statut " ~ final_status, info=True) }}
+    {% do run_query(
+        "UPDATE TCH.T_SUIV_TRMT SET EXEC_END_DTTM=CURRENT_TIMESTAMP(0), "
+        "EXEC_STTS_CD='" ~ final ~ "' WHERE EXEC_ID = " ~ lookup
+    ) %}
+    {% do run_query(
+        "UPDATE TCH.T_SUIV_RUN SET RUN_END_DTTM=CURRENT_TIMESTAMP(0), "
+        "RUN_STTS_CD='" ~ final ~ "' WHERE EXEC_ID = " ~ lookup
+    ) %}
+    {{ log("✓ log_run_end : statut " ~ final, info=True) }}
   {% endif %}
 {% endmacro %}
