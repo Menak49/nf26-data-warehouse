@@ -1,3 +1,20 @@
-apache-airflow==3.2.1
+# ─── dbt ───────────────────────────────────────────────
 dbt-core==1.11.11
+dbt-snowflake==1.11.5
 dbt-postgres==1.10.0
+
+# ─── Snowflake ─────────────────────────────────────────
+snowflake-connector-python==4.6.0
+
+# ─── AWS (si utilisé) ──────────────────────────────────
+boto3==1.43.17
+
+# ─── Data / Analytics ──────────────────────────────────
+pandas==2.3.3
+numpy==2.4.6
+pyarrow==24.0.0
+
+# ─── Utilitaires ───────────────────────────────────────
+python-dotenv==1.2.2
+PyYAML==6.0.3
+requests==2.34.2
