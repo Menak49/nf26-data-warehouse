@@ -6,6 +6,6 @@ SELECT
     ROOM_TYP,
     ROOM_DAY_RATE,
     CRTN_DT,
-    0   AS EXEC_ID
+    {{ generate_exec_id() }}    AS EXEC_ID
 
 FROM {{ ref('wrk_room') }}
