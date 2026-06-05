@@ -109,15 +109,6 @@ def run_start(conn):
     with conn.cursor() as c:
         c.execute(
             """
-            INSERT INTO TCH.T_SUIV_TRMT
-            (EXEC_ID, SCRPT_NAME, EXEC_STRT_DTTM, EXEC_STTS_CD)
-            VALUES (%s, 'PYTHON_RUN', CURRENT_TIMESTAMP(0), 'ENC')
-            """,
-            (exec_id,),
-        )
-
-        c.execute(
-            """
             INSERT INTO TCH.T_SUIV_RUN
             (EXEC_ID, RUN_STRT_DTTM, RUN_STTS_CD)
             VALUES (%s, CURRENT_TIMESTAMP(0), 'ENC')
@@ -131,17 +122,6 @@ def run_start(conn):
 
 def run_end(conn, exec_id, status):
     with conn.cursor() as c:
-
-        c.execute(
-            """
-            UPDATE TCH.T_SUIV_TRMT
-            SET EXEC_END_DTTM = CURRENT_TIMESTAMP(0),
-                EXEC_STTS_CD = %s
-            WHERE EXEC_ID = %s
-            """,
-            (status, exec_id),
-        )
-
         c.execute(
             """
             UPDATE TCH.T_SUIV_RUN
@@ -155,12 +135,8 @@ def run_end(conn, exec_id, status):
     log.info(f"RUN {exec_id} terminé → {status}")
 
 
-def exec_start(conn, name):
-
-    exec_id = str(uuid.uuid4())
-
+def exec_start(conn, exec_id, name):
     with conn.cursor() as c:
-
         c.execute(
             """
             INSERT INTO TCH.T_SUIV_TRMT
@@ -170,39 +146,17 @@ def exec_start(conn, name):
             (exec_id, name),
         )
 
-        c.execute(
-            """
-            INSERT INTO TCH.T_SUIV_RUN
-            (EXEC_ID, RUN_STRT_DTTM, RUN_STTS_CD)
-            VALUES (%s, CURRENT_TIMESTAMP(0), 'ENC')
-            """,
-            (exec_id,),
-        )
-
-    return exec_id
-
-def exec_end(conn, exec_id, status):
-
+def exec_end(conn, exec_id, name, status):
     with conn.cursor() as c:
-
         c.execute(
             """
             UPDATE TCH.T_SUIV_TRMT
             SET EXEC_END_DTTM = CURRENT_TIMESTAMP(0),
                 EXEC_STTS_CD = %s
             WHERE EXEC_ID = %s
+              AND SCRPT_NAME = %s
             """,
-            (status, exec_id),
-        )
-
-        c.execute(
-            """
-            UPDATE TCH.T_SUIV_RUN
-            SET RUN_END_DTTM = CURRENT_TIMESTAMP(0),
-                RUN_STTS_CD = %s
-            WHERE EXEC_ID = %s
-            """,
-            (status, exec_id),
+            (status, exec_id, name),
         )
 
 
@@ -326,14 +280,14 @@ def main():
         return False
 
     conn = init_snowflake_connexion(log)
-    run_exec_id = run_start(conn)
+    exec_id = run_start(conn)
     success = True
 
     try:
         for table in sorted(files_by_table):
             mode = TABLE_CONFIG[table]["mode"]
             log.info(f"--- STG.{table} [{mode}] ---")
-            exec_id = exec_start(conn, f"INGEST_{table}")
+            exec_id = exec_start(conn, exec_id, f"INGEST_{table}")
             ok = True
             try:
                 df = build_df(table, files_by_table[table])
@@ -343,10 +297,10 @@ def main():
             except Exception as e:
                 log.error(f"  STG.{table} : {e}")
                 ok = False
-            exec_end(conn, exec_id, "OK" if ok else "KO")
+            exec_end(conn, exec_id, f"INGEST_{table}", "OK" if ok else "KO")
             success &= ok
     finally:
-        run_end(conn, run_exec_id, "OK" if success else "KO")
+        run_end(conn, exec_id, "OK" if success else "KO")
         conn.close()
 
     log.info(f"{'OK' if success else 'KO'} en {time.time() - t0:.1f}s")
