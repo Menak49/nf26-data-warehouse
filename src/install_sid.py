@@ -22,8 +22,6 @@ SQL_SCRIPTS = [
     "src/sql/03_create_tables_tch.sql",
 ]
 
-SNOWFLAKE_CONFIG = {"user", "password", "account", "role", "warehouse", "database"}
-
 
 def execute_sql_file(cursor, filepath) -> bool:
     """Execute sql file and print logs"""
