@@ -15,3 +15,7 @@ FROM {{ ref('wrk_individual') }}  wi
 INNER JOIN {{ ref('R_PART') }}    rp
     ON rp.SRC_ID  = wi.SRC_ID
    AND rp.SRC_TYP = wi.SRC_TYP
+
+{% if is_incremental() %} -- Permet d'ajouter uniquement les nouvelles lignes à la table cible lors d'une exécution incrémentale
+WHERE rp.PART_ID NOT IN (SELECT PART_ID FROM {{ this }})
+{% endif %}

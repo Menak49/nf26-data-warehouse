@@ -21,3 +21,7 @@ INNER JOIN {{ ref('R_PART') }} rp_stff
 INNER JOIN {{ ref('R_PART') }} rp_patn
     ON rp_patn.SRC_ID  = wc.PATN_ID
    AND rp_patn.SRC_TYP = 'Patient'
+
+{% if is_incremental() %}
+WHERE wc.CONS_STRT_DTTM > (SELECT MAX(CONS_STRT_DTTM) FROM {{ this }})
+{% endif %}

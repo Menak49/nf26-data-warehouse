@@ -12,3 +12,7 @@ FROM {{ ref('wrk_hospitalisation') }} wh
 INNER JOIN {{ ref('R_PART') }} rp
     ON rp.SRC_ID  = wh.STFF_ID
    AND rp.SRC_TYP != 'Patient'
+
+{% if is_incremental() %}
+WHERE wh.HOSP_STRT_DTTM > (SELECT MAX(HOSP_STRT_DTTM) FROM {{ this }})
+{% endif %}

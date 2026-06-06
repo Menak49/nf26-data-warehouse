@@ -10,3 +10,7 @@ FROM {{ ref('wrk_telephone') }} wt
 INNER JOIN {{ ref('R_PART') }} rp
     ON rp.SRC_ID  = wt.SRC_ID
    AND rp.SRC_TYP = 'Patient'
+
+{% if is_incremental() %}
+WHERE wt.STRT_VALD_DTTM > (SELECT MAX(STRT_VALD_DTTM) FROM {{ this }})
+{% endif %}
