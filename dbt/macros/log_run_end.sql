@@ -1,6 +1,6 @@
 {% macro log_run_end(status='OK') %}
   {#
-    on-run-end : clôture la dernière entrée 'DBT_RUN' (T_SUIV_TRMT + T_SUIV_RUN).
+    on-run-end : clôture le RUN courant (le dernier 'ENC' dans T_SUIV_RUN).
     Statut OK / KO selon dbt 'results'.
   #}
   {% if execute %}
@@ -13,18 +13,11 @@
       {% set final = 'KO' if has_err.v else 'OK' %}
     {% endif %}
 
-    {% set lookup %}
-      (SELECT EXEC_ID FROM TCH.T_SUIV_TRMT
-       WHERE SCRPT_NAME = 'DBT_RUN'
-       ORDER BY EXEC_STRT_DTTM DESC LIMIT 1)
-    {% endset %}
-    {% do run_query(
-        "UPDATE TCH.T_SUIV_TRMT SET EXEC_END_DTTM=CURRENT_TIMESTAMP(0), "
-        "EXEC_STTS_CD='" ~ final ~ "' WHERE EXEC_ID = " ~ lookup
-    ) %}
     {% do run_query(
         "UPDATE TCH.T_SUIV_RUN SET RUN_END_DTTM=CURRENT_TIMESTAMP(0), "
-        "RUN_STTS_CD='" ~ final ~ "' WHERE EXEC_ID = " ~ lookup
+        "RUN_STTS_CD='" ~ final ~ "' "
+        "WHERE EXEC_ID = (SELECT EXEC_ID FROM TCH.T_SUIV_RUN "
+                         "WHERE RUN_STTS_CD='ENC' ORDER BY RUN_STRT_DTTM DESC LIMIT 1)"
     ) %}
     {{ log("✓ log_run_end : statut " ~ final, info=True) }}
   {% endif %}
