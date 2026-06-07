@@ -12,6 +12,7 @@ default_args = {
     "retries": 2,
     "retry_delay": timedelta(seconds=5),
     "email_on_failure": False,
+    "max_active_runs": 1,
 }
 
 with DAG(
@@ -32,12 +33,14 @@ with DAG(
         source {ENV_PATH} && 
         python3 src/install_sid.py
         """,
+        wait_for_completion=True,
     )
 
     # Déclenchement du deuxième DAG (ingestion)
     trigger_daily_dag = TriggerDagRunOperator(
         task_id="trigger_ingest_stg",
         trigger_dag_id="nf26_ingestion_dw",
+        wait_for_completion=True,
     )
 
     # ── Ordre d'exécution ──────────────────────────────────────────────────

@@ -11,6 +11,7 @@ default_args = {
     "retries": 1,
     "retry_delay": timedelta(seconds=5),
     "email_on_failure": False,
+    "max_active_runs": 1,
 }
 
 
@@ -31,6 +32,7 @@ with DAG(
         source {ENV_PATH} && 
         python3 src/load_stg.py {{{{ dag_run.conf['date'] if dag_run and 'date' in dag_run.conf else ds_nodash }}}}
         """,
+        wait_for_completion=True,
     )
 
     dbt_run = BashOperator(
@@ -42,6 +44,7 @@ with DAG(
         cd dbt && 
         dbt run
         """,
+        wait_for_completion=True,
     )
 
     ingest_stg >> dbt_run
