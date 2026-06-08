@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow import DAG  # type: ignore
+from airflow.operators.bash import BashOperator  # type: ignore
 
 # Mettre ces PATH dans le .env ? Tout le monde à les même ?
 PROJECT_PATH = "NF26_Smart_Teems"

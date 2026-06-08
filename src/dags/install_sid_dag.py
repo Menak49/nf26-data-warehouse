@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow import DAG  # type: ignore
+from airflow.operators.bash import BashOperator  # type: ignore
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator  # type: ignore
 
 # Mettre ces PATH dans le .env ? Tout le monde à les même ?
 PROJECT_PATH = "NF26_Smart_Teems"
@@ -37,11 +37,11 @@ with DAG(
     )
 
     # Déclenchement du deuxième DAG (ingestion)
-    trigger_daily_dag = TriggerDagRunOperator(
-        task_id="trigger_ingest_stg",
-        trigger_dag_id="nf26_ingestion_dw",
-        wait_for_completion=True,
-    )
+    # trigger_daily_dag = TriggerDagRunOperator(
+    #     task_id="trigger_ingest_stg",
+    #     trigger_dag_id="nf26_ingestion_dw",
+    #     wait_for_completion=True,
+    # )
 
     # ── Ordre d'exécution ──────────────────────────────────────────────────
-    install_sid >> trigger_daily_dag
+    install_sid
