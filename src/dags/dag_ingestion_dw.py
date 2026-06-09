@@ -19,9 +19,8 @@ with DAG(
     dag_id="nf26_ingestion_dw",
     description="Ingestion des données txt dans les tables stg",
     default_args=default_args,
-    start_date=datetime(2026, 4, 29),
-    schedule="@daily",
-    catchup=True,
+    schedule=None,
+    catchup=False,
 ) as dag:
 
     ingest_stg = BashOperator(
@@ -32,6 +31,7 @@ with DAG(
         source {ENV_PATH} && 
         python3 src/load_stg.py {{{{ dag_run.conf['date'] if dag_run and 'date' in dag_run.conf else ds_nodash }}}}
         """,
+        trigger_rule="none_failed",
     )
 
     dbt_run = BashOperator(
@@ -43,6 +43,7 @@ with DAG(
         cd dbt && 
         dbt run
         """,
+        trigger_rule="none_failed",
     )
 
     ingest_stg >> dbt_run

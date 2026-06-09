@@ -57,7 +57,6 @@ with DAG(
         task_id="trigger_ingest_stg",
         trigger_dag_id="nf26_ingestion_dw",
         conf={"date": "{{ ds_nodash }}"},
-        wait_for_completion=True,
         trigger_rule="none_failed",
     )
 
