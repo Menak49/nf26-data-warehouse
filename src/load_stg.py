@@ -287,7 +287,7 @@ def main():
         for table in sorted(files_by_table):
             mode = TABLE_CONFIG[table]["mode"]
             log.info(f"--- STG.{table} [{mode}] ---")
-            exec_id = exec_start(conn, exec_id, f"INGEST_{table}")
+            exec_start(conn, exec_id, f"INGEST_{table}")
             ok = True
             try:
                 df = build_df(table, files_by_table[table])
