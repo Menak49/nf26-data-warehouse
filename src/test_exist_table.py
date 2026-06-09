@@ -15,7 +15,7 @@ def table_exists():
     conn = init_snowflake_connexion(log)
     cursor = conn.cursor()
 
-    query = "SELECT * FROM SOC.R_PART;"
+    query = "SELECT 1 FROM SNOWFLAKE.INFORMATION_SCHEMA.DATABASES WHERE DATABASE_NAME = 'NF26_HOSPITAL'"
     cursor.execute(query)
 
     # Si fetchone() renvoie un résultat, la table existe
@@ -23,7 +23,10 @@ def table_exists():
 
     cursor.close()
     conn.close()
-    return exists
+    if exists:
+        return "trigger_ingest_stg"
+    else:
+        return "install_sid"
 
 
 if __name__ == "__main__":

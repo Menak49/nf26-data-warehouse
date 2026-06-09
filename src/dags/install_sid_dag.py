@@ -12,6 +12,8 @@ from airflow.operators.bash import BashOperator  # type: ignore
 from airflow.operators.python import BranchPythonOperator  # type: ignore
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator  # type: ignore
 from airflow.operators.empty import EmptyOperator  # type: ignore
+from airflow.utils.trigger_rule import TriggerRule  # type: ignore
+
 from test_exist_table import table_exists  # type: ignore
 import logging
 
@@ -36,15 +38,10 @@ with DAG(
     schedule="@daily",
     catchup=True,
 ) as dag:
-    # 1. Test existance table
-    test_exist = BranchPythonOperator(
-        task_id="test_table_exist", python_callable=table_exists
-    )
 
-    # 2. Une tâche vide si table existe
-    skip_action = EmptyOperator(task_id="skip_action")
+    check_sid = BranchPythonOperator(task_id="check_sid", python_callable=table_exists)
 
-    # 3. Installation du SID si table existe pas (création des tables Snowflake)
+    # ── Tâche : Installation du SID (création des tables Snowflake) ──────
     install_sid = BashOperator(
         task_id="install_sid",
         bash_command=f"""
@@ -55,14 +52,14 @@ with DAG(
         """,
     )
 
-    # 4. Déclenchement du deuxième DAG (ingestion)
-    trigger_daily_dag = TriggerDagRunOperator(
+    # Déclenchement du deuxième DAG (ingestion)
+    trigger_ingest_stg = TriggerDagRunOperator(
         task_id="trigger_ingest_stg",
         trigger_dag_id="nf26_ingestion_dw",
+        conf={"date": "{{ ds_nodash }}"},
         wait_for_completion=True,
+        trigger_rule="none_failed",
     )
 
-    # ── Ordre d'exécution ──────────────────────────────────────────────────
-    test_exist >> [install_sid, skip_action]
-    install_sid >> trigger_daily_dag
-    skip_action >> trigger_daily_dag
+    check_sid >> [install_sid, trigger_ingest_stg]
+    install_sid >> trigger_ingest_stg

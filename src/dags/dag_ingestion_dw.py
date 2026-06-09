@@ -19,8 +19,9 @@ with DAG(
     dag_id="nf26_ingestion_dw",
     description="Ingestion des données txt dans les tables stg",
     default_args=default_args,
-    schedule=None,
-    catchup=False,
+    start_date=datetime(2026, 4, 29),
+    schedule="@daily",
+    catchup=True,
 ) as dag:
 
     ingest_stg = BashOperator(
