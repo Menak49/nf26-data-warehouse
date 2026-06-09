@@ -14,5 +14,5 @@ INNER JOIN {{ ref('R_MEDC') }} rm
    AND rm.MANF_BRND = wt.MANF_BRND
 
 {% if is_incremental() %}
-WHERE wt.TRET_CRTN_DTTM > (SELECT MAX(TRET_CRTN_DTTM) FROM {{ this }})
+WHERE wt.TRET_CRTN_DTTM > (SELECT COALESCE(MAX(TRET_CRTN_DTTM), '1900-01-01'::TIMESTAMP) FROM {{ this }})
 {% endif %}

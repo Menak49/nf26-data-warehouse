@@ -14,5 +14,5 @@ INNER JOIN {{ ref('R_PART') }} rp
    AND rp.SRC_TYP != 'Patient'
 
 {% if is_incremental() %}
-WHERE wh.HOSP_STRT_DTTM > (SELECT MAX(HOSP_STRT_DTTM) FROM {{ this }})
+WHERE wh.HOSP_STRT_DTTM > (SELECT COALESCE(MAX(HOSP_STRT_DTTM), '1900-01-01'::TIMESTAMP) FROM {{ this }})
 {% endif %}

@@ -16,5 +16,5 @@ INNER JOIN {{ ref('R_PART') }} rp
    AND rp.SRC_TYP = 'Patient'
 
 {% if is_incremental() %}
-WHERE wa.STRT_VALD_DTTM > (SELECT MAX(STRT_VALD_DTTM) FROM {{ this }})
+WHERE wa.STRT_VALD_DTTM > (SELECT COALESCE(MAX(STRT_VALD_DTTM), '1900-01-01') FROM {{ this }})
 {% endif %}
