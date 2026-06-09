@@ -94,6 +94,10 @@ TABLE_CONFIG = {
             "COUT_HOSPI",
             "ID_PERSONNEL_RESP",
         ],
+        "rename": {
+            "ID_CONSULT_hospi": "ID_CONSULT",
+            "NO_CHAMBRE_hospi": "NO_CHAMBRE",
+        }
     },
 }
 
@@ -160,8 +164,6 @@ def exec_end(conn, exec_id, name, status):
         )
 
 
-# --- Découverte des fichiers ---
-
 
 def discover():
     """
@@ -175,9 +177,6 @@ def discover():
             if not f.endswith(".txt") or f.startswith("._"):
                 continue
             parts = f[:-4].split("_")
-            # Nom fichier : NOMTABLE_YYYYMMDD.txt → 2 parties
-            # Mais HOSPITALISATION_YYYYMMDD → split donne plus de 2 parties
-            # donc on prend tout sauf le dernier élément comme nom de table
             date = parts[-1]
             table = "_".join(parts[:-1]).upper()
             if table not in TABLE_CONFIG:
@@ -190,7 +189,6 @@ def discover():
     return by_table
 
 
-# --- Construction du DataFrame ---
 
 
 def build_df(table, files):
@@ -199,7 +197,8 @@ def build_df(table, files):
     df = pd.read_csv(p, sep=";", dtype=str)
     log.info(f"  [{cfg['mode']}] {len(df)} lignes lues")
 
-    # Suppression des lignes avec PK ou colonnes obligatoires vides
+    rename_map = TABLE_CONFIG[table].get("rename", {})
+    df = df.rename(columns=rename_map)  
     cols_required = [cfg["pk"]] + cfg.get("notnull", [])
     cols_required = [c for c in cols_required if c in df.columns]
     if cols_required:
