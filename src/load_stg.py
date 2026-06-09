@@ -4,9 +4,9 @@ import time
 import tempfile
 import pandas as pd
 import logging
-import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
 from snowflake_conn import init_snowflake_connexion
+import uuid
 
 logging.basicConfig(
     filename="logs/load_stg.log",
@@ -36,12 +36,12 @@ TABLE_CONFIG = {
     "CHAMBRE": {
         "mode": "full",
         "pk": "NO_CHAMBRE",
-        "notnull": ["NOM_CHAMBRE", "PRIX_JOUR", "DT_CREATION"],
+        "notnull": ["NOM_CHAMBRE", "NO_ETAGE","NOM_BATIMENT", "PRIX_JOUR", "DT_CREATION"],
     },
     "MEDICAMENT": {
         "mode": "full",
         "pk": "CD_MEDICAMENT",
-        "notnull": ["NOM_MEDICAMENT", "CATG_MEDICAMENT", "MARQUE_FABRI"],
+        "notnull": ["NOM_MEDICAMENT", "CONDIT_MEDICAMENT","CATG_MEDICAMENT", "MARQUE_FABRI"],
     },
     "PERSONNEL": {
         "mode": "full",
@@ -50,6 +50,7 @@ TABLE_CONFIG = {
             "NOM_PERSONNEL",
             "PRENOM_PERSONNEL",
             "FONCTION_PERSONNEL",
+            "TD_DEBUT_ACTIVITE",
             "TS_CREATION_PERSONNEL",
             "TS_MAJ_PERSONNEL",
             "CD_STATUT_PERSONNEL",
@@ -61,10 +62,6 @@ TABLE_CONFIG = {
         "notnull": [
             "NOM_PATIENT",
             "PRENOM_PATIENT",
-            "DT_NAISS",
-            "VILLE_NAISS",
-            "PAYS_NAISS",
-            "NUM_SECU",
             "TS_CREATION_PATIENT",
             "TS_MAJ_PATIENT",
         ],
@@ -72,7 +69,7 @@ TABLE_CONFIG = {
     "CONSULTATION": {
         "mode": "delta",
         "pk": "ID_CONSULT",
-        "notnull": ["ID_PERSONNEL", "ID_PATIENT", "TS_DEBUT_CONSULT", "TS_FIN_CONSULT"],
+        "notnull": ["ID_PERSONNEL", "ID_PATIENT", "TS_DEBUT_CONSULT", "TS_FIN_CONSULT", "POIDS_PATIENT",],
     },
     "TRAITEMENT": {
         "mode": "delta",
@@ -81,7 +78,7 @@ TABLE_CONFIG = {
             "CD_MEDICAMENT",
             "CATG_MEDICAMENT",
             "MARQUE_FABRI",
-            "QTE_MEDICAMENT",
+            "DSC_POSOLOGIE",
             "ID_CONSULT",
             "TS_CREATION_TRAITEMENT",
         ],
@@ -90,9 +87,11 @@ TABLE_CONFIG = {
         "mode": "delta",
         "pk": "ID_HOSPI",
         "notnull": [
-            "ID_CONSULT_HOSPI",
-            "NO_CHAMBRE_HOSPI",
+            "ID_CONSULT",
+            "NO_CHAMBRE",
             "TS_DEBUT_HOSPI",
+            "TS_FIN_HOSPI",
+            "COUT_HOSPI",
             "ID_PERSONNEL_RESP",
         ],
     },
@@ -102,48 +101,62 @@ TABLE_CONFIG = {
 # --- Tracking TCH ---
 
 
+
+
 def run_start(conn):
-    with conn.cursor() as c:
-        c.execute("""INSERT INTO TCH.T_SUIV_RUN (RUN_ID, RUN_STRT_DTTM, RUN_STTS_CD)
-                    SELECT COALESCE(MAX(RUN_ID),0)+1, CURRENT_TIMESTAMP(0), 'ENC'
-                    FROM TCH.T_SUIV_RUN""")
-        c.execute("SELECT MAX(RUN_ID) FROM TCH.T_SUIV_RUN")
-        run_id = c.fetchone()[0]
-    log.info(f"RUN démarré → RUN_ID = {run_id}")
-    return run_id
+    exec_id = str(uuid.uuid4())
 
-
-def run_end(conn, run_id, status):
     with conn.cursor() as c:
         c.execute(
-            """UPDATE TCH.T_SUIV_RUN
-                    SET RUN_END_DTTM=CURRENT_TIMESTAMP(0), RUN_STTS_CD=%s
-                    WHERE RUN_ID=%s""",
-            (status, run_id),
+            """
+            INSERT INTO TCH.T_SUIV_RUN
+            (EXEC_ID, RUN_STRT_DTTM, RUN_STTS_CD)
+            VALUES (%s, CURRENT_TIMESTAMP(0), 'ENC')
+            """,
+            (exec_id,),
         )
-    log.info(f"RUN {run_id} terminé → {status}")
 
-
-def exec_start(conn, run_id, name):
-    with conn.cursor() as c:
-        c.execute("SELECT TCH.SEQ_EXEC_ID.NEXTVAL")
-        exec_id = c.fetchone()[0]
-        c.execute(
-            """INSERT INTO TCH.T_SUIV_TRMT
-                    (EXEC_ID, RUN_ID, SCRPT_NAME, EXEC_STRT_DTTM, EXEC_STTS_CD)
-                    VALUES (%s, %s, %s, CURRENT_TIMESTAMP(0), 'ENC')""",
-            (exec_id, run_id, name),
-        )
+    log.info(f"RUN démarré → EXEC_ID = {exec_id}")
     return exec_id
 
 
-def exec_end(conn, exec_id, status):
+def run_end(conn, exec_id, status):
     with conn.cursor() as c:
         c.execute(
-            """UPDATE TCH.T_SUIV_TRMT
-                    SET EXEC_END_DTTM=CURRENT_TIMESTAMP(0), EXEC_STTS_CD=%s
-                    WHERE EXEC_ID=%s""",
+            """
+            UPDATE TCH.T_SUIV_RUN
+            SET RUN_END_DTTM = CURRENT_TIMESTAMP(0),
+                RUN_STTS_CD = %s
+            WHERE EXEC_ID = %s
+            """,
             (status, exec_id),
+        )
+
+    log.info(f"RUN {exec_id} terminé → {status}")
+
+
+def exec_start(conn, exec_id, name):
+    with conn.cursor() as c:
+        c.execute(
+            """
+            INSERT INTO TCH.T_SUIV_TRMT
+            (EXEC_ID, SCRPT_NAME, EXEC_STRT_DTTM, EXEC_STTS_CD)
+            VALUES (%s, %s, CURRENT_TIMESTAMP(0), 'ENC')
+            """,
+            (exec_id, name),
+        )
+
+def exec_end(conn, exec_id, name, status):
+    with conn.cursor() as c:
+        c.execute(
+            """
+            UPDATE TCH.T_SUIV_TRMT
+            SET EXEC_END_DTTM = CURRENT_TIMESTAMP(0),
+                EXEC_STTS_CD = %s
+            WHERE EXEC_ID = %s
+              AND SCRPT_NAME = %s
+            """,
+            (status, exec_id, name),
         )
 
 
@@ -267,14 +280,14 @@ def main():
         return False
 
     conn = init_snowflake_connexion(log)
-    run_id = run_start(conn)
+    exec_id = run_start(conn)
     success = True
 
     try:
         for table in sorted(files_by_table):
             mode = TABLE_CONFIG[table]["mode"]
             log.info(f"--- STG.{table} [{mode}] ---")
-            exec_id = exec_start(conn, run_id, f"INGEST_{table}")
+            exec_id = exec_start(conn, exec_id, f"INGEST_{table}")
             ok = True
             try:
                 df = build_df(table, files_by_table[table])
@@ -284,10 +297,10 @@ def main():
             except Exception as e:
                 log.error(f"  STG.{table} : {e}")
                 ok = False
-            exec_end(conn, exec_id, "OK" if ok else "KO")
+            exec_end(conn, exec_id, f"INGEST_{table}", "OK" if ok else "KO")
             success &= ok
     finally:
-        run_end(conn, run_id, "OK" if success else "KO")
+        run_end(conn, exec_id, "OK" if success else "KO")
         conn.close()
 
     log.info(f"{'OK' if success else 'KO'} en {time.time() - t0:.1f}s")
