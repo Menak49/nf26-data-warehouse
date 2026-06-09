@@ -1,0 +1,16 @@
+SELECT
+    ID_PATIENT          AS SRC_ID,
+    NUM_VOIE            AS STRT_NUM,
+    DSC_VOIE            AS STRT_DSC,
+    CMPL_VOIE           AS COMP_STRT,
+    CD_POSTAL           AS POST_CD,
+    VILLE               AS CITY_NAME,
+    PAYS                AS CNTR_NAME,
+    TS_CREATION_PATIENT AS STRT_VALD_DTTM,
+    TS_MAJ_PATIENT      AS END_VALD_DTTM
+
+FROM {{ source('STG', 'PATIENT') }}
+
+WHERE ID_PATIENT            IS NOT NULL
+  AND TS_CREATION_PATIENT   IS NOT NULL
+  AND TS_MAJ_PATIENT        IS NOT NULL

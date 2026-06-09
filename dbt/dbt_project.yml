@@ -11,7 +11,6 @@ clean-targets:
   - "dbt_modules"
   - "logs"
 
-# Hooks au niveau RUN : 1 ligne dans TCH.T_SUIV_RUN par exécution dbt
 on-run-start:
   - "{{ log_run_start() }}"
 on-run-end:
@@ -27,5 +26,26 @@ models:
       +materialized: table
       +schema: WRK
     soc:
-      +materialized: table
       +schema: SOC
+      +materialized: table     
+      R_PART:
+        +materialized: incremental
+        +unique_key: ['SRC_ID', 'SRC_TYP']
+      O_INDV:
+        +materialized: incremental
+        +unique_key: PART_ID
+      O_CONS:
+        +materialized: incremental
+        +unique_key: CONS_ID
+      O_HOSP:
+        +materialized: incremental
+        +unique_key: HOSP_ID
+      O_TRET:
+        +materialized: incremental
+        +unique_key: TRET_ID
+      O_ADDR:
+        +materialized: incremental
+        +unique_key: ['PART_ID', 'STRT_VALD_DTTM']
+      O_TELP:
+        +materialized: incremental
+        +unique_key: ['PART_ID', 'STRT_VALD_DTTM']
