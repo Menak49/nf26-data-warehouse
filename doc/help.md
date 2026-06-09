@@ -68,3 +68,65 @@ Pour créer les autres tables de soc, il faut reproduire ce qui a été fait pr�
 - Créer un fichier avec le **même nom** que le nom mis dans l'étape précédente.
 - Utiliser les macros si besoin.
 - Faire un _dbt run_ pour tester. Si vous avez fait une mauvaise manip et que vous voulez supprimer les tables socles, il faut ajouter un _DROP TABLE XXX;_ au début du fichier _src/sql/02_create_tables_soc.sql_ puis run le _install_sid.py_ puis le _load_stg.py_ **Ne pas oublier de l'enlever après.** (vous pouvez aussi run un script sql qui ne fait que supprimer et recréer la table que vous souhaitez remettre à 0).
+
+## Installation de Airflow sur linux:
+
+Il faut mettre airflow dans un autre venv que celui utilisé pour le projet car il y a très souvent des conflits de versions. Nous pourrons tout de même utiliser le venv du projet lorsque nous executerons les scripts.
+
+```bash
+# Création du venv airflow (à la racine de l'ordinateur pour pouvoir être utilisé par d'autres projets si besoin)
+python3 -m venv ~/airflow-venv
+source ~/airflow-venv/bin/activate
+
+# Définition du home Airflow (peut être mis dans le /.bashrc si vous ne voulez pas mettre ce dossier à la racine)
+export AIRFLOW_HOME=~/airflow
+
+# Installation de Airflow avec une contrainte sur les versions de python et d'airfloww
+AIRFLOW_VERSION=2.9.3
+PYTHON_VERSION="$(python --version | cut -d " " -f 2 | cut -d "." -f 1-2)"
+CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
+pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
+```
+
+Airflow est maintenant installé. Dans le dossier airflow de la racine de votre ordinateur (ou le dossier que vous avez choisi à la ligne AIRFLOW*HOME), il y a un fichier \_airflow.cfg*. Ce fichier contient l'ensemble des paramètres de airflow que vous pouvez modifier. Je vous conseille de mettre à False la variable _load_examples_ car sinon tous les dags d'exemple seront ajoutés (et il y en a beaucoup).
+
+Modifier aussi la variable _dags_folder_ qui est le path du dossier avec tous vos dags. Pour une meilleure robustesse, je vous conseille d'utiliser le path qui part de la racine de votre ordinateur.
+
+Ensuite, il faut initialiser la db utilisée par Airflow:
+
+```bash
+# Initialisation de la db de airflow
+airflow db init
+
+# Création d'un utilisateur
+airflow users create \
+  --username name \
+  --firstname Firstname \
+  --lastname Lastname \
+  --role Admin \
+  --email admin@example.com \
+  --password name_lastname
+```
+
+La base de données est maintenant créée. Il suffit d'activer Airflow (section suivante).
+
+## Activation de airflow pour système linux:
+
+Pour faire focntionner airflow, il faut lancer son scheduler et son webserver.
+
+Dans un premier terminal il faut activer le venv de airflow et son scheduler.
+
+```bash
+source ~/airflow-venv/bin/activate # Activation du venv avec airflow
+airflow scheduler # Lancement du scheduler (gère les DAG)
+```
+
+Dans un autre terminal, il faut lancer le webserver.
+
+```bash
+source ~/airflow-venv/bin/activate # Activation du venv avec airflow
+airflow webserver --port 8080 # Lancement du serveur (pour l'interface graphique)
+```
+
+Les 2 taches tourneront en arrière plan.
+Vous pouvez maintenant aller sur le lien localhost:8080 ou vous pourrez utiliser l'interface graphique d'airflow.
