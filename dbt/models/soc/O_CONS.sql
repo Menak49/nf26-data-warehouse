@@ -23,5 +23,5 @@ INNER JOIN {{ ref('R_PART') }} rp_patn
    AND rp_patn.SRC_TYP = 'Patient'
 
 {% if is_incremental() %}
-WHERE wc.CONS_STRT_DTTM > (SELECT MAX(CONS_STRT_DTTM) FROM {{ this }})
+WHERE wc.CONS_STRT_DTTM > (SELECT COALESCE(MAX(CONS_STRT_DTTM), '1900-01-01'::TIMESTAMP) FROM {{ this }})
 {% endif %}
