@@ -6,7 +6,7 @@ rooms AS (
 ),
 hosp_detail AS (
     SELECT
-        DATE_TRUNC('MONTH', h.HOSP_STRT_DTTM) AS MOIS,
+        DATE(h.HOSP_STRT_DTTM) AS JOUR,
         h.HOSP_ID,
         h.CONS_ID,
         h.STFF_ID,
@@ -17,7 +17,7 @@ hosp_detail AS (
     FROM hosp h
 )
 SELECT
-    hd.MOIS,
+    hd.JOUR,
     COUNT(DISTINCT hd.HOSP_ID) AS NB_HOSPITALISATIONS,
     COUNT(DISTINCT hd.CONS_ID) AS NB_CONSULTATIONS_LIEES,
     COUNT(DISTINCT hd.STFF_ID) AS NB_MEDECINS_RESPONSABLES,
