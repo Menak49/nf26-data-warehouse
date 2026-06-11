@@ -25,6 +25,9 @@ models:
     wrk:
       +materialized: table
       +schema: WRK
+    marts:
+      +materialized: view
+      +schema: MART
     soc:
       +schema: SOC
       +materialized: table     

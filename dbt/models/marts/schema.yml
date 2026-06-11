@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: kpi_age_pathologie
+    description: "Lot 4 - Âge moyen des patients par pathologie et période"
+    columns:
+      - name: MOIS
+        tests:
+          - not_null
+      - name: PATHOLOGIE
+        tests:
+          - not_null
+
+  - name: kpi_medicament_pathologie
+    description: "Lot 4 - Médicament le plus prescrit par pathologie et période"
+    columns:
+      - name: MOIS
+        tests:
+          - not_null
+      - name: PATHOLOGIE
+        tests:
+          - not_null
+
+  - name: kpi_chambres_pathologie
+    description: "Lot 4 - Nombre de chambres par pathologie et période"
+    columns:
+      - name: MOIS
+        tests:
+          - not_null
+      - name: PATHOLOGIE
+        tests:
+          - not_null
+
+  - name: kpi_medecins_pathologie
+    description: "Lot 4 - Proportion médecins par spécialité/pathologie et période"
+    columns:
+      - name: MOIS
+        tests:
+          - not_null
+      - name: PATHOLOGIE
+        tests:
+          - not_null
+
+  - name: kpi_hospitalisation
+    description: "Lot 4 - Proportion patients hospitalisés ≥1 nuit par période"
+    columns:
+      - name: MOIS
+        tests:
+          - not_null
+          - unique
+
+  - name: kpi_chambres
+    description: "Lot 4 - Occupation/disponibilité des chambres par période"
+    columns:
+      - name: MOIS
+        tests:
+          - not_null
+      - name: ROOM_NUM
+        tests:
+          - not_null
