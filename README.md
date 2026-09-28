@@ -4,7 +4,7 @@ Projet réalisé dans le cadre de l'UV **NF26** (UTC) : conception et mise en pl
 
 ## Contexte
 
-Le projet part d'un mapping de données hospitalières (patients, consultations, hospitalisations, traitements, personnel, chambres, coordonnées) fourni dans `sujets/Hopital Mapping VF2026.xlsx`, et construit un pipeline complet jusqu'aux indicateurs métier.
+Le projet part d'un mapping de données hospitalières (patients, consultations, hospitalisations, traitements, personnel, chambres, coordonnées) fourni par l'entreprise partenaire (non inclus dans ce dépôt), et construit un pipeline complet jusqu'aux indicateurs métier.
 
 ## Architecture
 
