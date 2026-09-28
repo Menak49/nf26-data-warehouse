@@ -2,6 +2,7 @@ Data
 Inputs_Projets_NF26_AI07/
 .venv/
 venv/
+.venv_test/
 **/__pycache__/
 logs/
 dbt/logs/
